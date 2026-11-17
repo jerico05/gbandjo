@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Gbandjo">
+  <rect width="48" height="48" rx="12" fill="#00843D"/>
+  <path stroke="#FF8C00" stroke-width="2" stroke-linecap="round" d="M8 18h7M6 22h10M8 26h6"/>
+  <path fill="#fff" d="M22 12c0-1.1.9-2 2-2h8c2.2 0 4 1.8 4 4v16c0 1.1-.9 2-2 2h-8c-1.1 0-2-.9-2-2V12z"/>
+  <rect x="25" y="18" width="8" height="10" rx="1.5" fill="#E8F5E9"/>
+  <text x="26.5" y="26.5" font-family="Segoe UI,sans-serif" font-size="7" font-weight="800" fill="#00843D">%</text>
+</svg>

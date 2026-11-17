@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-gbandjo-green: #00843d;
+  --color-gbandjo-green-dark: #006b31;
+  --color-gbandjo-green-light: #e8f5e9;
+  --color-gbandjo-orange: #ff8c00;
+  --color-gbandjo-yellow: #ffc107;
+  --color-gbandjo-ink: #1a2e1f;
+  --color-gbandjo-muted: #5f6f63;
+  --color-gbandjo-border: #e2ebe4;
+  --color-gbandjo-surface: #f7faf8;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply m-0 min-h-svh bg-white font-sans text-gbandjo-ink;
+  }
+
+  #root {
+    @apply min-h-svh;
+  }
+}

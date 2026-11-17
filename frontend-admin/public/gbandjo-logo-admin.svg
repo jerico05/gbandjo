@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Gbandjo</title>
+  <desc id="desc">Logo bleu de Gbandjo avec un sac de courses et une étiquette de réduction.</desc>
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1683FF"/>
+      <stop offset="1" stop-color="#0645B8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sac de courses -->
+  <path d="M105 113 V86 C105 39 142 8 185 8 C228 8 265 39 265 86 V113"
+        fill="none" stroke="url(#blue)" stroke-width="19" stroke-linecap="round"/>
+  <path d="M78 103 Q78 91 93 91 H277 Q293 91 293 108 L307 270 Q309 299 280 306
+           Q185 331 90 306 Q61 299 64 270 Z" fill="url(#blue)"/>
+
+  <!-- Etiquette de réduction -->
+  <path d="M153 137 L229 137 L267 176 L267 257 Q267 269 255 269 H155
+           Q143 269 143 257 V147 Q143 137 153 137 Z" fill="#FFFFFF"
+        transform="rotate(-12 205 203)"/>
+  <circle cx="238" cy="160" r="8" fill="#0756C9"/>
+  <path d="M177 235 L239 174" stroke="#0756C9" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="184" cy="188" r="15" fill="none" stroke="#0756C9" stroke-width="9"/>
+  <circle cx="231" cy="230" r="15" fill="none" stroke="#0756C9" stroke-width="9"/>
+
+  <!-- Traits de mouvement -->
+  <path d="M17 143 H76 M8 184 H67 M25 225 H73" stroke="url(#blue)" stroke-width="20" stroke-linecap="round"/>
+  <!-- Courbe dynamique sous le sac -->
+  <path d="M55 275 Q61 342 166 345 Q276 348 327 278" fill="none"
+        stroke="url(#blue)" stroke-width="17" stroke-linecap="round"/>
+
+  <!-- Nom de marque -->
+  <text x="360" y="250" font-family="Arial, Helvetica, sans-serif" font-size="190"
+        font-weight="800" letter-spacing="-8" fill="#0756C9">Gbandjo</text>
+
+  <!-- Accents au-dessus du o -->
+  <path d="M1080 53 L1075 22 M1124 59 L1140 30 M1158 86 L1184 67"
+        stroke="#1683FF" stroke-width="15" stroke-linecap="round"/>
+</svg>
