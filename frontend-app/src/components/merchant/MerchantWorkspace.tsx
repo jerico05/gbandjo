@@ -7,13 +7,13 @@ type MerchantWorkspaceProps = {
 
 export function MerchantWorkspace({ children, title }: MerchantWorkspaceProps) {
   return (
-    <section className="rounded-3xl border border-gbandjo-border bg-white shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-sm sm:rounded-3xl">
       {title ? (
-        <div className="border-b border-gbandjo-border px-5 py-4 sm:px-8">
-          <h1 className="text-lg font-bold text-gbandjo-ink">{title}</h1>
+        <div className="border-b border-gbandjo-border px-4 py-3.5 sm:px-8 sm:py-4">
+          <h1 className="text-base font-bold text-gbandjo-ink sm:text-lg">{title}</h1>
         </div>
       ) : null}
-      <div className="p-5 sm:p-8">{children}</div>
+      <div className="p-4 sm:p-8">{children}</div>
     </section>
   )
 }

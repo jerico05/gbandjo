@@ -10,7 +10,7 @@ const items = [
 export function MarketplaceServiceBar() {
   return (
     <section className="rounded-2xl border border-gbandjo-border bg-white px-4 py-6 shadow-sm sm:px-8">
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {items.map((item) => (
           <div key={item.title} className="flex items-start gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gbandjo-green-light text-gbandjo-green">

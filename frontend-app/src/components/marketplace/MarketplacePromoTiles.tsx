@@ -18,7 +18,7 @@ export function MarketplacePromoTiles({ offers, offerBasePath }: MarketplaceProm
   const member = sorted[2] ?? sorted[0]
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
       <Link
         to={`${offerBasePath}/${deal.id}`}
         className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-5 transition hover:shadow-md"

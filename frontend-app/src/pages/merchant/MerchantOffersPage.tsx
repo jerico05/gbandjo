@@ -109,7 +109,7 @@ export function MerchantOffersPage() {
       <section className="rounded-3xl border border-gbandjo-border bg-white p-5 shadow-sm sm:p-6">
         {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
         <form
-          className="mb-8 grid gap-4 rounded-2xl border border-gbandjo-border bg-gbandjo-surface/50 p-6 md:grid-cols-2"
+          className="mb-6 grid gap-4 rounded-2xl border border-gbandjo-border bg-gbandjo-surface/50 p-4 sm:mb-8 sm:p-6 md:grid-cols-2"
           onSubmit={handleCreate}
         >
           <label className="text-sm font-medium">
@@ -173,7 +173,7 @@ export function MerchantOffersPage() {
             Aucune offre pour le moment. Publiez votre première promo avec le formulaire ci dessus.
           </p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {offers.map((o) => (
               <MerchantOfferMarketCard
                 key={o.id}

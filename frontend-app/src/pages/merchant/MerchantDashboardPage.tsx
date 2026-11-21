@@ -77,18 +77,17 @@ export function MerchantDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-gbandjo-green/20 bg-white p-6 shadow-sm sm:p-8">
+      <section className="relative overflow-hidden rounded-2xl border border-gbandjo-green/20 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gbandjo-green/10 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-gbandjo-orange/10 blur-2xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-medium text-gbandjo-muted">Bonjour, {greetingName}</p>
-            <h1 className="mt-1 text-2xl font-extrabold text-gbandjo-ink sm:text-3xl">
+            <h1 className="mt-1 text-xl font-extrabold text-gbandjo-ink sm:text-3xl">
               {store?.name ?? 'Votre espace commerçant'}
             </h1>
             <p className="mt-2 max-w-xl text-sm text-gbandjo-muted">
-              Pilotez vos produits, vos offres anti gaspi et les réservations de vos clients depuis un seul tableau de
-              bord.
+              Produits, offres anti gaspi et réservations depuis un seul tableau de bord.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {store ? (
@@ -103,16 +102,18 @@ export function MerchantDashboardPage() {
               ) : null}
             </div>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button href="/mon-commerce/offres">Nouvelle offre</Button>
-            <Button variant="outline" href="/mon-commerce/produits">
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <Button href="/mon-commerce/offres" className="w-full sm:w-auto">
+              Nouvelle offre
+            </Button>
+            <Button variant="outline" href="/mon-commerce/produits" className="w-full sm:w-auto">
               Ajouter un produit
             </Button>
           </div>
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <MerchantKpiCard
           label="Produits au catalogue"
           value={displayValue(productCount)}
@@ -163,38 +164,56 @@ export function MerchantDashboardPage() {
               {loading ? 'Chargement…' : 'Aucune réservation pour le moment.'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[520px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gbandjo-border text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">
-                    <th className="px-6 py-3 font-semibold">Offre</th>
-                    <th className="px-4 py-3 font-semibold">Qté</th>
-                    <th className="px-4 py-3 font-semibold">Montant</th>
-                    <th className="px-4 py-3 font-semibold">Statut</th>
-                    <th className="px-6 py-3 font-semibold">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentReservations.map((r) => (
-                    <tr key={r.id} className="border-b border-gbandjo-border/80 last:border-0 hover:bg-gbandjo-surface/60">
-                      <td className="max-w-[200px] truncate px-6 py-3.5 font-medium text-gbandjo-ink">
+            <>
+              <ul className="divide-y divide-gbandjo-border md:hidden">
+                {recentReservations.map((r) => (
+                  <li key={r.id} className="space-y-2 px-4 py-3.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 truncate font-medium text-gbandjo-ink">
                         {r.offer_label ?? `Offre #${r.offer_id}`}
-                      </td>
-                      <td className="px-4 py-3.5 tabular-nums text-gbandjo-muted">{r.quantity}</td>
-                      <td className="px-4 py-3.5 font-semibold tabular-nums text-gbandjo-ink">
-                        {formatFcfa(Number(r.unit_price) * r.quantity, { maximumFractionDigits: 0 })}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <ReservationStatusBadge status={r.status} />
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-3.5 text-xs text-gbandjo-muted">
-                        {formatShortDate(r.created_at)}
-                      </td>
+                      </p>
+                      <ReservationStatusBadge status={r.status} />
+                    </div>
+                    <p className="text-sm text-gbandjo-muted">
+                      Qté {r.quantity} · {formatFcfa(Number(r.unit_price) * r.quantity, { maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-gbandjo-muted">{formatShortDate(r.created_at)}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[520px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-gbandjo-border text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">
+                      <th className="px-6 py-3 font-semibold">Offre</th>
+                      <th className="px-4 py-3 font-semibold">Qté</th>
+                      <th className="px-4 py-3 font-semibold">Montant</th>
+                      <th className="px-4 py-3 font-semibold">Statut</th>
+                      <th className="px-6 py-3 font-semibold">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recentReservations.map((r) => (
+                      <tr key={r.id} className="border-b border-gbandjo-border/80 last:border-0 hover:bg-gbandjo-surface/60">
+                        <td className="max-w-[200px] truncate px-6 py-3.5 font-medium text-gbandjo-ink">
+                          {r.offer_label ?? `Offre #${r.offer_id}`}
+                        </td>
+                        <td className="px-4 py-3.5 tabular-nums text-gbandjo-muted">{r.quantity}</td>
+                        <td className="px-4 py-3.5 font-semibold tabular-nums text-gbandjo-ink">
+                          {formatFcfa(Number(r.unit_price) * r.quantity, { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <ReservationStatusBadge status={r.status} />
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-3.5 text-xs text-gbandjo-muted">
+                          {formatShortDate(r.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
 
@@ -239,7 +258,7 @@ export function MerchantDashboardPage() {
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gbandjo-muted">Raccourcis</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {quickActions.map((action) => (
             <Link
               key={action.to}

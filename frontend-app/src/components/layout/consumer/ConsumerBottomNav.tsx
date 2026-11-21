@@ -34,7 +34,7 @@ export function ConsumerBottomNav() {
               end={link.end}
               className={({ isActive }) =>
                 cn(
-                  'relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] font-semibold',
+                  'relative flex min-w-[4.25rem] flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-semibold',
                   isActive ? 'text-gbandjo-green' : 'text-gbandjo-muted',
                 )
               }

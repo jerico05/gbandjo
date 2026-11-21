@@ -37,7 +37,7 @@ export function FeaturedOffersSection({ offers, isLiveData, isLoading }: Feature
             Les premières offres apparaîtront ici dès qu&apos;un commerce sera actif.
           </p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {top.map((offer) => (
               <OfferCard key={offer.id} offer={offer} offerBasePath="/espace/offres" variant="marketplace" />
             ))}

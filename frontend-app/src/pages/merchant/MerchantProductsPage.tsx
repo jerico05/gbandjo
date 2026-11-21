@@ -122,20 +122,20 @@ export function MerchantProductsPage() {
 
   return (
     <MerchantWorkspace>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-6 sm:gap-4">
         <div className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gbandjo-green-light text-gbandjo-green">
             <Icon name="products" className="h-5 w-5" />
           </span>
-          <span className="text-lg font-bold text-gbandjo-ink">Produits</span>
+          <span className="text-base font-bold text-gbandjo-ink sm:text-lg">Produits</span>
         </div>
-        <Button type="button" onClick={() => setShowAdd((v) => !v)}>
+        <Button type="button" className="w-full sm:w-auto" onClick={() => setShowAdd((v) => !v)}>
           + Ajouter un produit
         </Button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-2xl border border-gbandjo-border bg-gbandjo-surface px-3 py-2">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+        <div className="flex w-full flex-1 items-center gap-2 rounded-2xl border border-gbandjo-border bg-gbandjo-surface px-3 py-2 sm:min-w-[200px]">
           <Icon name="search" className="h-4 w-4 text-gbandjo-muted" />
           <input
             type="search"
@@ -148,32 +148,30 @@ export function MerchantProductsPage() {
             className="w-full bg-transparent text-sm outline-none"
           />
         </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          disabled={isLoadingCategories}
-          className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm disabled:opacity-60"
-        >
-          <option value="">{isLoadingCategories ? 'Catégories…' : 'Catégorie : toutes'}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm"
-        >
-          <option value="">Statut : tous</option>
-          <option value="active">Actifs</option>
-          <option value="inactive">Inactifs</option>
-        </select>
-        <span className="inline-flex items-center gap-2 rounded-xl border border-gbandjo-border px-3 py-2 text-sm text-gbandjo-muted">
-          <Icon name="filter" className="h-4 w-4" />
-          Filtres
-        </span>
+        <div className="grid grid-cols-2 gap-2 sm:contents">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            disabled={isLoadingCategories}
+            className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm disabled:opacity-60"
+          >
+            <option value="">{isLoadingCategories ? 'Catégories…' : 'Catégorie : toutes'}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm"
+          >
+            <option value="">Statut : tous</option>
+            <option value="active">Actifs</option>
+            <option value="inactive">Inactifs</option>
+          </select>
+        </div>
       </div>
 
       {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
@@ -244,121 +242,141 @@ export function MerchantProductsPage() {
       {isLoadingProducts ? (
         <MerchantTableSkeleton rows={6} />
       ) : (
-      <div className="overflow-x-auto rounded-2xl border border-gbandjo-border">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="bg-gbandjo-surface text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">
-            <tr>
-              <th className="px-4 py-3">Produit</th>
-              <th className="px-4 py-3">Catégorie</th>
-              <th className="px-4 py-3">Images</th>
-              <th className="px-4 py-3">Statut</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          <ul className="space-y-3 md:hidden">
             {pageItems.map((p) => (
-              <Fragment key={p.id}>
-                <tr className="border-t border-gbandjo-border hover:bg-gbandjo-surface/50">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      {p.images?.[0] ? (
-                        <img src={p.images[0].url} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                      ) : (
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gbandjo-green-light">
-                          <Icon name="image" className="h-6 w-6 text-gbandjo-green/50" />
-                        </span>
-                      )}
-                      <div>
-                        <p className="font-semibold text-gbandjo-ink">{p.name}</p>
-                        <p className="text-xs text-gbandjo-muted">ID #{p.id}</p>
-                      </div>
+              <li key={p.id} className="rounded-2xl border border-gbandjo-border p-4">
+                <div className="flex items-start gap-3">
+                  {p.images?.[0] ? (
+                    <img src={p.images[0].url} alt="" className="h-14 w-14 rounded-xl object-cover" />
+                  ) : (
+                    <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-gbandjo-green-light">
+                      <Icon name="image" className="h-6 w-6 text-gbandjo-green/50" />
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gbandjo-ink">{p.name}</p>
+                    <p className="text-xs text-gbandjo-muted">{p.category_name}</p>
+                    <div className="mt-2">
+                      <Badge tone={p.is_active ? 'green' : 'neutral'}>{p.is_active ? 'Actif' : 'Inactif'}</Badge>
                     </div>
-                  </td>
-                  <td className="px-4 py-4 text-gbandjo-muted">{p.category_name}</td>
-                  <td className="px-4 py-4">{p.images?.length ?? 0}</td>
-                  <td className="px-4 py-4">
-                    <Badge tone={p.is_active ? 'green' : 'neutral'}>{p.is_active ? 'Actif' : 'Inactif'}</Badge>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
-                        className="inline-flex items-center gap-1 rounded-xl bg-gbandjo-green px-3 py-1.5 text-xs font-semibold text-white"
-                      >
-                        <Icon name="edit" className="h-4 w-4" />
-                        Modifier
-                      </button>
-                      <button type="button" onClick={() => void handleDelete(p.id)} aria-label="Supprimer">
-                        <Icon name="trash" className="h-5 w-5 text-red-500" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-gbandjo-green px-3 py-2 text-xs font-semibold text-white"
+                  >
+                    <Icon name="edit" className="h-4 w-4" />
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(p.id)}
+                    className="rounded-xl border border-red-200 px-3 py-2"
+                    aria-label="Supprimer"
+                  >
+                    <Icon name="trash" className="h-5 w-5 text-red-500" />
+                  </button>
+                </div>
                 {expandedId === p.id ? (
-                  <tr className="border-t border-gbandjo-border bg-gbandjo-surface/40">
-                    <td colSpan={5} className="px-4 py-4">
-                      <p className="mb-2 text-sm text-gbandjo-muted">{p.description || 'Aucune description'}</p>
-                      <div className="flex flex-wrap items-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => void handleToggleActive(p)}>
-                          {p.is_active ? 'Désactiver' : 'Activer'}
-                        </Button>
-                        <label className="cursor-pointer rounded-xl border border-gbandjo-border px-3 py-2 text-xs">
-                          Upload image
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) void handleUpload(p.id, file)
-                            }}
-                          />
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="URL image"
-                          className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm"
-                          value={imageUrl[p.id] ?? ''}
-                          onChange={(e) => setImageUrl({ ...imageUrl, [p.id]: e.target.value })}
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          className="!px-3 !py-2 text-xs"
-                          onClick={() =>
-                            void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
-                              .then(refreshProducts)
-                              .catch((err) => setError(getApiErrorMessage(err)))
-                          }
-                        >
-                          Ajouter URL
-                        </Button>
-                      </div>
-                      {p.images?.length ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {p.images.map((img) => (
-                            <span key={img.id} className="relative">
-                              <img src={img.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
-                              <button
-                                type="button"
-                                className="absolute -right-1 -top-1 rounded-full bg-white text-xs text-red-600 shadow"
-                                onClick={() => void deleteProductImage(p.id, img.id).then(refreshProducts)}
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                    </td>
-                  </tr>
+                  <div className="mt-3 border-t border-gbandjo-border pt-3">
+                    <ProductExpandPanel
+                      product={p}
+                      imageUrl={imageUrl[p.id] ?? ''}
+                      onImageUrlChange={(value) => setImageUrl({ ...imageUrl, [p.id]: value })}
+                      onToggleActive={() => void handleToggleActive(p)}
+                      onUpload={(file) => void handleUpload(p.id, file)}
+                      onAddUrl={() =>
+                        void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
+                          .then(refreshProducts)
+                          .catch((err) => setError(getApiErrorMessage(err)))
+                      }
+                      onDeleteImage={(imageId) => void deleteProductImage(p.id, imageId).then(refreshProducts)}
+                    />
+                  </div>
                 ) : null}
-              </Fragment>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-2xl border border-gbandjo-border md:block">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="bg-gbandjo-surface text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">
+                <tr>
+                  <th className="px-4 py-3">Produit</th>
+                  <th className="px-4 py-3">Catégorie</th>
+                  <th className="px-4 py-3">Images</th>
+                  <th className="px-4 py-3">Statut</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((p) => (
+                  <Fragment key={p.id}>
+                    <tr className="border-t border-gbandjo-border hover:bg-gbandjo-surface/50">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          {p.images?.[0] ? (
+                            <img src={p.images[0].url} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                          ) : (
+                            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gbandjo-green-light">
+                              <Icon name="image" className="h-6 w-6 text-gbandjo-green/50" />
+                            </span>
+                          )}
+                          <div>
+                            <p className="font-semibold text-gbandjo-ink">{p.name}</p>
+                            <p className="text-xs text-gbandjo-muted">ID #{p.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-gbandjo-muted">{p.category_name}</td>
+                      <td className="px-4 py-4">{p.images?.length ?? 0}</td>
+                      <td className="px-4 py-4">
+                        <Badge tone={p.is_active ? 'green' : 'neutral'}>{p.is_active ? 'Actif' : 'Inactif'}</Badge>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                            className="inline-flex items-center gap-1 rounded-xl bg-gbandjo-green px-3 py-1.5 text-xs font-semibold text-white"
+                          >
+                            <Icon name="edit" className="h-4 w-4" />
+                            Modifier
+                          </button>
+                          <button type="button" onClick={() => void handleDelete(p.id)} aria-label="Supprimer">
+                            <Icon name="trash" className="h-5 w-5 text-red-500" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedId === p.id ? (
+                      <tr className="border-t border-gbandjo-border bg-gbandjo-surface/40">
+                        <td colSpan={5} className="px-4 py-4">
+                          <ProductExpandPanel
+                            product={p}
+                            imageUrl={imageUrl[p.id] ?? ''}
+                            onImageUrlChange={(value) => setImageUrl({ ...imageUrl, [p.id]: value })}
+                            onToggleActive={() => void handleToggleActive(p)}
+                            onUpload={(file) => void handleUpload(p.id, file)}
+                            onAddUrl={() =>
+                              void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
+                                .then(refreshProducts)
+                                .catch((err) => setError(getApiErrorMessage(err)))
+                            }
+                            onDeleteImage={(imageId) => void deleteProductImage(p.id, imageId).then(refreshProducts)}
+                          />
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <Pagination
@@ -370,5 +388,72 @@ export function MerchantProductsPage() {
         className="mt-6"
       />
     </MerchantWorkspace>
+  )
+}
+
+function ProductExpandPanel({
+  product,
+  imageUrl,
+  onImageUrlChange,
+  onToggleActive,
+  onUpload,
+  onAddUrl,
+  onDeleteImage,
+}: {
+  product: Product
+  imageUrl: string
+  onImageUrlChange: (value: string) => void
+  onToggleActive: () => void
+  onUpload: (file: File) => void
+  onAddUrl: () => void
+  onDeleteImage: (imageId: number) => void
+}) {
+  return (
+    <>
+      <p className="mb-2 text-sm text-gbandjo-muted">{product.description || 'Aucune description'}</p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+        <Button type="button" variant="outline" onClick={onToggleActive}>
+          {product.is_active ? 'Désactiver' : 'Activer'}
+        </Button>
+        <label className="cursor-pointer rounded-xl border border-gbandjo-border px-3 py-2 text-center text-xs sm:text-left">
+          Upload image
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) onUpload(file)
+            }}
+          />
+        </label>
+        <input
+          type="url"
+          placeholder="URL image"
+          className="w-full rounded-xl border border-gbandjo-border px-3 py-2 text-sm sm:w-auto"
+          value={imageUrl}
+          onChange={(e) => onImageUrlChange(e.target.value)}
+        />
+        <Button type="button" variant="secondary" className="!px-3 !py-2 text-xs" onClick={onAddUrl}>
+          Ajouter URL
+        </Button>
+      </div>
+      {product.images?.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {product.images.map((img) => (
+            <span key={img.id} className="relative">
+              <img src={img.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+              <button
+                type="button"
+                className="absolute -right-1 -top-1 rounded-full bg-white text-xs text-red-600 shadow"
+                onClick={() => onDeleteImage(img.id)}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </>
   )
 }

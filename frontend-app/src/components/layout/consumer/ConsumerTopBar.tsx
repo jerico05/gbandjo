@@ -1,21 +1,13 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { LogoGbandjo } from '../../branding/LogoGbandjo'
 import { Button } from '../../ui/Button'
 import { Icon } from '../../icons/Icon'
-import { cn } from '../../../lib/utils/cn'
 import { logout } from '../../../lib/services/authService'
 import { fetchUnreadCount } from '../../../lib/services/notificationService'
 import { useAuthStore } from '../../../stores/authStore'
-import { ConsumerPromoBar } from './ConsumerPromoBar'
 import { useConsumerSearch } from './consumer-search-context'
-
-const secondaryNav = [
-  { to: '/espace', label: 'Nouveautés', end: true },
-  { to: '/espace', label: 'Top offres', badge: 'Hot' as const },
-  { to: '/espace/reservations', label: 'Mes réservations' },
-]
 
 export function ConsumerTopBar() {
   const navigate = useNavigate()
@@ -71,68 +63,57 @@ export function ConsumerTopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-[0_2px_16px_rgba(26,46,31,0.06)]">
-      <ConsumerPromoBar />
-
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-          <Link to="/espace" className="shrink-0 self-start lg:self-center" aria-label="Marketplace Gbandjo">
+    <header className="sticky top-0 z-40 border-b border-gbandjo-border/70 bg-white/95 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link to="/espace" className="shrink-0" aria-label="Marketplace Gbandjo">
             <LogoGbandjo variant="header" />
           </Link>
 
           <form
             onSubmit={submitSearch}
-            className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-full border border-gbandjo-border bg-gbandjo-surface lg:mx-4"
+            className="hidden min-w-0 flex-1 items-stretch overflow-hidden rounded-full border border-gbandjo-border bg-gbandjo-surface sm:flex lg:mx-2"
           >
             <input
               type="search"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               placeholder="Rechercher produit, commerce, catégorie…"
-              className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-gbandjo-muted sm:py-3"
+              className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-gbandjo-muted"
               aria-label="Rechercher"
             />
             <button
               type="submit"
-              className="flex items-center gap-2 bg-gbandjo-ink px-4 text-white transition hover:bg-gbandjo-green-dark sm:px-6"
+              className="flex items-center gap-2 bg-gbandjo-ink px-4 text-white transition hover:bg-gbandjo-green-dark sm:px-5"
               aria-label="Lancer la recherche"
             >
-              <Icon name="search" className="h-5 w-5 sm:hidden" />
-              <span className="hidden text-sm font-semibold sm:inline">Rechercher</span>
+              <Icon name="search" className="h-5 w-5 md:hidden" />
+              <span className="hidden text-sm font-semibold md:inline">Rechercher</span>
             </button>
           </form>
 
-          <div className="flex items-center justify-end gap-1 sm:gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {user?.role === 'COMMERCANT' ? (
               <Link
                 to="/mon-commerce"
-                className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm font-semibold text-gbandjo-ink hover:border-gbandjo-green"
+                className="rounded-xl border border-gbandjo-border px-2.5 py-2 text-xs font-semibold text-gbandjo-ink hover:border-gbandjo-green sm:px-3 sm:text-sm"
               >
-                Ma boutique
+                Boutique
               </Link>
             ) : null}
+
             {user?.role === 'CONSOMMATEUR' ? (
               <>
                 <HeaderNotificationButton unread={unread} />
-                <Link
-                  to="/espace/profil"
-                  className="hidden flex-col items-center gap-0.5 text-[10px] font-semibold text-gbandjo-muted transition hover:text-gbandjo-green sm:flex"
-                  aria-label="Favoris"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-white">
-                    <Icon name="heart" className="h-5 w-5" />
-                  </span>
-                  
-                </Link>
-                <div ref={menuRef} className="relative hidden sm:block">
+                <div ref={menuRef} className="relative">
                   <button
                     type="button"
                     onClick={() => setMenuOpen((o) => !o)}
-                    className="flex items-center gap-2 rounded-2xl border border-gbandjo-border bg-white py-1 pl-1 pr-3 shadow-sm"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gbandjo-green text-sm font-bold text-white shadow-sm"
+                    aria-expanded={menuOpen}
+                    aria-label="Menu compte"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gbandjo-green text-sm font-bold text-white">
-                      {user.first_name?.[0] ?? 'C'}
-                    </span>
+                    {user.first_name?.[0] ?? 'C'}
                   </button>
                   {menuOpen ? (
                     <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} />
@@ -148,81 +129,48 @@ export function ConsumerTopBar() {
                 >
                   Connexion
                 </Link>
-                <Button href="/inscription" variant="secondary" className="!hidden !px-4 !py-2 sm:!inline-flex">
-                  S&apos;inscrire
+                <Button href="/inscription" className="!px-3 !py-2 text-sm sm:!px-4">
+                  <span className="sm:hidden">Rejoindre</span>
+                  <span className="hidden sm:inline">S&apos;inscrire</span>
                 </Button>
-                <Button href="/inscription" className="!px-4 !py-2 text-sm sm:hidden">
-                  Rejoindre
-                </Button>
-              </>
-            ) : null}
-
-            <div ref={user?.role === 'CONSOMMATEUR' ? undefined : menuRef} className="relative sm:hidden">
-              {user?.role === 'CONSOMMATEUR' ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setMenuOpen((o) => !o)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-gbandjo-green text-sm font-bold text-white sm:hidden"
-                    aria-expanded={menuOpen}
-                  >
-                    {user.first_name?.[0] ?? 'C'}
-                  </button>
-                  {menuOpen ? (
-                    <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} />
-                  ) : null}
-                </>
-              ) : (
-                <>
+                <div ref={menuRef} className="relative sm:hidden">
                   <button
                     type="button"
                     onClick={() => setMenuOpen((o) => !o)}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-gbandjo-surface"
                     aria-expanded={menuOpen}
+                    aria-label="Menu"
                   >
                     <Icon name="user" className="h-5 w-5 text-gbandjo-ink" />
                   </button>
                   {menuOpen ? <GuestDropdown onClose={() => setMenuOpen(false)} /> : null}
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
-      </div>
 
-      <nav
-        className="hidden border-t border-gbandjo-border bg-white lg:block"
-        aria-label="Catégories et navigation marketplace"
-      >
-        <div className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-2 sm:px-6">
-          <Link
-            to="/espace#catalogue"
-            className="mr-2 inline-flex items-center gap-2 rounded-lg border border-gbandjo-border bg-gbandjo-surface px-3 py-2 text-sm font-semibold text-gbandjo-ink hover:border-gbandjo-green"
+        <form
+          onSubmit={submitSearch}
+          className="mt-3 flex items-stretch overflow-hidden rounded-full border border-gbandjo-border bg-gbandjo-surface sm:hidden"
+        >
+          <input
+            type="search"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            placeholder="Rechercher…"
+            className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-gbandjo-muted"
+            aria-label="Rechercher"
+          />
+          <button
+            type="submit"
+            className="bg-gbandjo-ink px-4 text-white"
+            aria-label="Lancer la recherche"
           >
-            <Icon name="grid" className="h-4 w-4" />
-            Catégories
-          </Link>
-          {secondaryNav.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive && item.end ? 'text-gbandjo-green' : 'text-gbandjo-muted hover:text-gbandjo-ink',
-                )
-              }
-            >
-              {item.label}
-              {item.badge ? (
-                <span className="rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">{item.badge}</span>
-              ) : null}
-            </NavLink>
-          ))}
-          <span className="ml-auto text-xs text-gbandjo-muted">Livraison / retrait selon le commerce</span>
-        </div>
-      </nav>
+            <Icon name="search" className="h-5 w-5" />
+          </button>
+        </form>
+      </div>
     </header>
   )
 }
@@ -247,9 +195,6 @@ function HeaderNotificationButton({ unread }: { unread: number }) {
 function GuestDropdown({ onClose }: { onClose: () => void }) {
   return (
     <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-xl">
-      <p className="border-b border-gbandjo-border bg-gbandjo-surface/50 px-4 py-3 text-xs text-gbandjo-muted">
-        Connectez-vous pour réserver, suivre vos réservations et gérer votre profil.
-      </p>
       <Link to="/connexion" state={{ from: '/espace' }} className="block px-4 py-2.5 text-sm font-semibold text-gbandjo-green" onClick={onClose}>
         Connexion
       </Link>
@@ -273,18 +218,21 @@ function AccountDropdown({
   onClose: () => void
 }) {
   return (
-    <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-xl">
+    <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-xl">
       <div className="border-b border-gbandjo-border bg-gbandjo-surface/50 px-4 py-3">
         <p className="text-sm font-bold text-gbandjo-ink">
           {user?.first_name} {user?.last_name}
         </p>
         <p className="truncate text-xs text-gbandjo-muted">{user?.email}</p>
       </div>
-      <Link to="/espace/profil" className="flex items-center gap-2 px-4 py-2.5 text-sm" onClick={onClose}>
+      <Link to="/espace/profil" className="block px-4 py-2.5 text-sm" onClick={onClose}>
         Mon profil
       </Link>
-      <Link to="/espace/reservations" className="flex items-center gap-2 px-4 py-2.5 text-sm" onClick={onClose}>
+      <Link to="/espace/reservations" className="block px-4 py-2.5 text-sm" onClick={onClose}>
         Mes réservations
+      </Link>
+      <Link to="/espace/notifications" className="block px-4 py-2.5 text-sm sm:hidden" onClick={onClose}>
+        Notifications
       </Link>
       <Link to="/" className="block border-t px-4 py-2.5 text-sm text-gbandjo-muted" onClick={onClose}>
         Site vitrine

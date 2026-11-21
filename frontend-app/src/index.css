@@ -20,6 +20,7 @@
 
   body {
     @apply m-0 min-h-svh bg-white font-sans text-gbandjo-ink;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   }
 
   #root {

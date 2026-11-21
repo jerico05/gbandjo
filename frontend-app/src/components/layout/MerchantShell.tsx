@@ -9,6 +9,7 @@ import { listMerchantOffers } from '../../lib/services/merchantOfferService'
 import { listProducts } from '../../lib/services/merchantProductService'
 import { listMerchantReservations } from '../../lib/services/reservationService'
 import { fetchMyStore } from '../../lib/services/storeService'
+import { InstallPrompt } from '../pwa/InstallPrompt'
 import { MerchantPromoBar } from '../merchant/marketplace/MerchantPromoBar'
 import { MerchantSidebar } from './merchant/MerchantSidebar'
 import { MerchantTopBar } from './merchant/MerchantTopBar'
@@ -27,11 +28,20 @@ export function MerchantShell() {
     prefetch(merchantKeys.reservations, listMerchantReservations, 45_000)
   }, [])
 
+  useEffect(() => {
+    if (!mobileNavOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [mobileNavOpen])
+
   return (
     <div className="min-h-svh bg-[#f3f5f9]">
       <MerchantSidebar className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex" />
       {mobileNavOpen ? (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-black/40"
@@ -39,7 +49,7 @@ export function MerchantShell() {
             onClick={() => setMobileNavOpen(false)}
           />
           <MerchantSidebar
-            className="relative z-10 h-full shadow-xl"
+            className="relative z-10 h-full max-w-[85vw] shadow-2xl sm:max-w-xs"
             onNavigate={() => setMobileNavOpen(false)}
           />
         </div>
@@ -48,10 +58,11 @@ export function MerchantShell() {
       <div className="flex min-h-svh min-w-0 flex-col lg:ml-64">
         <MerchantPromoBar />
         <MerchantTopBar onSidebarToggle={() => setMobileNavOpen((o) => !o)} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 px-3 py-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
+      <InstallPrompt />
     </div>
   )
 }

@@ -39,9 +39,9 @@ export function MerchantReservationsPage() {
       ) : (
       <ul className="space-y-4">
         {reservations.map((r) => (
-          <li key={r.id} className="rounded-2xl border border-gbandjo-border bg-white p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
+          <li key={r.id} className="rounded-2xl border border-gbandjo-border bg-white p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs font-semibold text-gbandjo-green">{r.reference}</p>
                 <p className="font-bold">{r.offer_label ?? `Offre #${r.offer_id}`}</p>
                 <p className="text-sm text-gbandjo-muted">
@@ -50,15 +50,16 @@ export function MerchantReservationsPage() {
               </div>
               <ReservationStatusBadge status={r.status} />
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
               {r.status === 'EN_ATTENTE' ? (
                 <>
-                  <Button type="button" onClick={() => void runAction(() => confirmMerchantReservation(r.id))}>
+                  <Button type="button" className="w-full sm:w-auto" onClick={() => void runAction(() => confirmMerchantReservation(r.id))}>
                     Confirmer
                   </Button>
                   <Button
                     variant="outline"
                     type="button"
+                    className="w-full sm:w-auto"
                     onClick={() => void runAction(() => rejectMerchantReservation(r.id, 'Refus commerçant'))}
                   >
                     Rejeter
@@ -67,12 +68,13 @@ export function MerchantReservationsPage() {
               ) : null}
               {r.status === 'CONFIRMEE' ? (
                 <>
-                  <Button type="button" onClick={() => void runAction(() => markReservationPickedUp(r.id))}>
+                  <Button type="button" className="w-full sm:w-auto" onClick={() => void runAction(() => markReservationPickedUp(r.id))}>
                     Marquer retirée
                   </Button>
                   <Button
                     variant="outline"
                     type="button"
+                    className="w-full sm:w-auto"
                     onClick={() => void runAction(() => cancelMerchantReservation(r.id, 'Annulation commerçant'))}
                   >
                     Annuler

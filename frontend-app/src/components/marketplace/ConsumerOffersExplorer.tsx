@@ -27,7 +27,7 @@ export function ConsumerOffersExplorer({
 }: ConsumerOffersExplorerProps) {
   const [offers, setOffers] = useState<ConsumerOffer[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const { query: headerQuery, setQuery: setHeaderQuery } = useConsumerSearch()
+  const { query: headerQuery } = useConsumerSearch()
   const [query, setQuery] = useState(headerQuery)
   const debouncedQuery = useDebouncedValue(query)
   const isMarketplace = layout === 'marketplace'
@@ -105,7 +105,7 @@ export function ConsumerOffersExplorer({
       return <p className="py-8 text-center text-gbandjo-muted">Aucune offre pour le moment.</p>
     }
     return (
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
         {list.map((offer) => (
           <OfferCard key={offer.id} offer={offer} offerBasePath={offerBasePath} variant={cardVariant} />
         ))}
@@ -114,25 +114,7 @@ export function ConsumerOffersExplorer({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-stretch overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-sm lg:hidden">
-        <span className="flex items-center pl-4 text-gbandjo-muted">
-          <Icon name="search" className="h-5 w-5" />
-        </span>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setHeaderQuery(e.target.value)
-          }}
-          placeholder="Rechercher produit, commerce…"
-          className="min-w-0 flex-1 px-3 py-3.5 text-sm outline-none"
-        />
-        <button type="button" className="bg-gbandjo-green px-6 text-sm font-semibold text-white hover:bg-gbandjo-green-dark">
-          OK
-        </button>
-      </div>
+    <div className="space-y-6 sm:space-y-8">
 
       {showCategoryStrip && categories.length > 0 ? (
         <div>
@@ -227,7 +209,7 @@ function OfferFiltersPanel(props: {
   geoError: string | null
 }) {
   const grid = (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
       <input
         type="number"
         min={0}

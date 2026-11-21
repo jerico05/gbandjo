@@ -33,7 +33,7 @@ export function StepsSection() {
           <h2 className="mt-2 text-2xl font-extrabold text-gbandjo-ink sm:text-3xl">Comment utiliser Gbandjo</h2>
           <p className="mt-3 text-gbandjo-muted">Quatre étapes pour réserver, récupérer et agir contre le gaspillage.</p>
         </div>
-        <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-12 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
           {steps.map((step, index) => (
             <li
               key={step.title}

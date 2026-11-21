@@ -9,7 +9,7 @@ type CategoryPillStripProps = {
 
 export function CategoryPillStrip({ categories, selectedId, onSelect }: CategoryPillStripProps) {
   return (
-    <div className="-mx-1 flex gap-3 overflow-x-auto pb-1">
+    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden">
       <button
         type="button"
         onClick={() => onSelect('')}

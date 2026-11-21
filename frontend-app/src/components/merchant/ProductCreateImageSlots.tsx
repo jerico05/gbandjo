@@ -58,7 +58,7 @@ export function ProductCreateImageSlots({ files, onChange, disabled }: ProductCr
           {filledCount}/{MIN_IMAGES}
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {files.map((file, index) => (
           <div
             key={index}
