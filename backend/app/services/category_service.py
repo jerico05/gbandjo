@@ -1,6 +1,7 @@
 """Service — catégories (lecture publique, création admin)."""
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from sqlalchemy.exc import IntegrityError
@@ -9,6 +10,10 @@ from app.extensions import db
 from app.models import Category
 from app.repositories.category_repository import CategoryRepository
 from app.utils.responses import ApiError
+
+
+_CATEGORY_CACHE: dict[str, Any] = {"at": 0.0, "items": []}
+_CATEGORY_CACHE_TTL_SEC = 120
 
 
 class CategoryService:
@@ -20,7 +25,18 @@ class CategoryService:
         return {"id": category.id, "name": category.name}
 
     def list_categories(self) -> list[dict[str, Any]]:
-        return [self.serialize(c) for c in self._categories.list_all()]
+        now = time.monotonic()
+        if _CATEGORY_CACHE["items"] and now - _CATEGORY_CACHE["at"] < _CATEGORY_CACHE_TTL_SEC:
+            return _CATEGORY_CACHE["items"]
+        items = [self.serialize(c) for c in self._categories.list_all()]
+        _CATEGORY_CACHE["at"] = now
+        _CATEGORY_CACHE["items"] = items
+        return items
+
+    @staticmethod
+    def invalidate_public_cache() -> None:
+        _CATEGORY_CACHE["at"] = 0.0
+        _CATEGORY_CACHE["items"] = []
 
     def create_category(self, name: str) -> dict[str, Any]:
         label = name.strip()
@@ -36,4 +52,5 @@ class CategoryService:
         except IntegrityError as err:
             db.session.rollback()
             raise ApiError("Cette catégorie existe déjà.", status=409) from err
+        self.invalidate_public_cache()
         return self.serialize(category)

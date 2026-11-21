@@ -10,6 +10,7 @@ from app.middleware.role_middleware import require_role
 from app.models.enums import UserRole
 from app.schemas.admin_schema import (
     AccountStatusInputSchema,
+    AdminUserDetailResponseSchema,
     AdminUserListResponseSchema,
     AdminUserResponseSchema,
 )
@@ -47,6 +48,18 @@ class AdminUserList(MethodView):
             per_page=request.args.get("per_page", type=int),
         )
         return ApiResponse.ok(data=data)
+
+
+@admin_users_blp.route("/<int:user_id>")
+class AdminUserDetail(MethodView):
+    @jwt_required
+    @require_role(UserRole.ADMIN)
+    @admin_users_blp.response(HTTPStatus.OK, AdminUserDetailResponseSchema)
+    @admin_users_blp.alt_response(404, schema=EnvelopeErrorSchema)
+    @admin_users_blp.doc(summary="Profil utilisateur et commerce associé", security=[{"bearerAuth": []}])
+    def get(self, user_id: int):
+        payload = _service.get_user_detail(user_id)
+        return ApiResponse.ok(data=payload)
 
 
 @admin_users_blp.route("/<int:user_id>/status")

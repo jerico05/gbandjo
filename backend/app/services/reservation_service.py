@@ -13,6 +13,7 @@ from app.repositories.offer_repository import OfferRepository
 from app.repositories.reservation_repository import ReservationRepository
 from app.services.notification_service import NotificationService
 from app.utils import utcnow
+from app.utils.reservation_reference import build_reservation_reference
 from app.utils.responses import ApiError
 
 
@@ -38,11 +39,28 @@ class ReservationService:
         return len(pending)
 
     @staticmethod
-    def serialize(reservation: Reservation) -> dict[str, Any]:
+    def _serialize_store(reservation: Reservation) -> dict[str, Any] | None:
         offer = reservation.offer
         product = offer.product if offer else None
+        store = product.store if product else None
+        if store is None:
+            return None
         return {
+            "id": store.id,
+            "name": store.name,
+            "address": store.address,
+            "phone": store.phone,
+            "latitude": float(store.latitude),
+            "longitude": float(store.longitude),
+        }
+
+    @classmethod
+    def serialize(cls, reservation: Reservation, *, include_store: bool = False) -> dict[str, Any]:
+        offer = reservation.offer
+        product = offer.product if offer else None
+        payload: dict[str, Any] = {
             "id": reservation.id,
+            "reference": reservation.reference,
             "offer_id": reservation.offer_id,
             "offer_label": product.name if product else None,
             "consumer_id": reservation.consumer_id,
@@ -54,7 +72,9 @@ class ReservationService:
             "processed_at": reservation.processed_at.isoformat() if reservation.processed_at else None,
             "reason": reservation.reason,
             "cancelled_by_role": reservation.cancelled_by_role.value if reservation.cancelled_by_role else None,
+            "store": cls._serialize_store(reservation) if include_store else None,
         }
+        return payload
 
     def _ensure_consumer(self, user) -> None:
         if user.role != UserRole.CONSOMMATEUR:
@@ -77,6 +97,13 @@ class ReservationService:
         self._ensure_consumer(consumer)
         self.expire_pending()
         offer = self._validate_offer_for_reservation(payload["offer_id"])
+        existing = self._reservations.find_active_by_consumer_and_offer(consumer.id, offer.id)
+        if existing is not None:
+            raise ApiError(
+                "Vous avez déjà une réservation active sur cette offre. "
+                "Modifiez-la depuis Mes réservations tant qu'elle est en attente.",
+                status=409,
+            )
         quantity = payload["quantity"]
         if quantity <= 0:
             raise ApiError("La quantité doit être strictement positive (RG10).", status=422)
@@ -93,6 +120,8 @@ class ReservationService:
             status=ReservationStatus.EN_ATTENTE,
         )
         self._reservations.add(reservation)
+        db.session.flush()
+        reservation.reference = build_reservation_reference(reservation.id, reservation.created_at)
         owner_id = offer.product.store.owner_id
         self._notify.notify_reservation(
             recipient_id=owner_id,
@@ -104,10 +133,61 @@ class ReservationService:
             recipient_id=consumer.id,
             reservation_id=reservation.id,
             type_code="RESERVATION_EN_ATTENTE",
-            message="Votre réservation est en attente de confirmation par le commerçant.",
+            message=(
+                f"Réservation {reservation.reference} en attente de confirmation par le commerçant."
+            ),
         )
         db.session.commit()
         return self.serialize(self._reservations.find_detail(reservation.id))
+
+    def get_consumer_reservation(self, consumer: Consumer, reservation_id: int) -> dict[str, Any]:
+        self._ensure_consumer(consumer)
+        self.expire_pending()
+        reservation = self._reservations.find_detail(reservation_id)
+        if reservation is None or reservation.consumer_id != consumer.id:
+            raise ApiError("Réservation introuvable.", status=404)
+        return self.serialize(reservation, include_store=True)
+
+    def update_by_consumer(
+        self, consumer: Consumer, reservation_id: int, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Modifie la quantité d'une réservation encore EN_ATTENTE uniquement."""
+        self._ensure_consumer(consumer)
+        self.expire_pending()
+        reservation = self._reservations.find_detail(reservation_id)
+        if reservation is None or reservation.consumer_id != consumer.id:
+            raise ApiError("Réservation introuvable.", status=404)
+        if reservation.status != ReservationStatus.EN_ATTENTE:
+            raise ApiError(
+                "Seules les réservations en attente peuvent être modifiées.",
+                status=409,
+            )
+        quantity = payload["quantity"]
+        if quantity <= 0:
+            raise ApiError("La quantité doit être strictement positive (RG10).", status=422)
+        offer = self._validate_offer_for_reservation(reservation.offer_id)
+        if quantity > offer.available_quantity:
+            raise ApiError(
+                "Quantité demandée supérieure au stock disponible (RG10).",
+                status=422,
+            )
+        previous_quantity = reservation.quantity
+        if quantity == previous_quantity:
+            return self.serialize(reservation, include_store=True)
+        reservation.quantity = quantity
+        reservation.unit_price = offer.discounted_price
+        owner_id = offer.product.store.owner_id
+        self._notify.notify_reservation(
+            recipient_id=owner_id,
+            reservation_id=reservation.id,
+            type_code="RESERVATION_MODIFIEE",
+            message=(
+                f"Réservation {reservation.reference} modifiée : "
+                f"{previous_quantity} → {quantity} unité(s)."
+            ),
+        )
+        db.session.commit()
+        return self.serialize(self._reservations.find_detail(reservation_id), include_store=True)
 
     def list_consumer_reservations(self, consumer: Consumer) -> list[dict[str, Any]]:
         self._ensure_consumer(consumer)
@@ -131,7 +211,7 @@ class ReservationService:
             recipient_id=owner_id,
             reservation_id=reservation.id,
             type_code="RESERVATION_ANNULEE",
-            message=f"Réservation #{reservation.id} annulée par le client.",
+            message=f"Réservation {reservation.reference} annulée par le client.",
         )
         db.session.commit()
         return self.serialize(reservation)
@@ -165,7 +245,10 @@ class ReservationService:
             recipient_id=reservation.consumer_id,
             reservation_id=reservation.id,
             type_code="RESERVATION_CONFIRMEE",
-            message="Votre réservation a été confirmée par le commerçant.",
+            message=(
+                f"Réservation {reservation.reference} confirmée. Consultez vos réservations "
+                "pour le bon de retrait et l'adresse du commerce."
+            ),
         )
         db.session.commit()
         return self.serialize(self._reservations.find_detail(reservation_id))

@@ -32,6 +32,8 @@ def _parse_query_args() -> dict:
         "latitude": args.get("latitude", type=float),
         "longitude": args.get("longitude", type=float),
         "sort": args.get("sort"),
+        "page": args.get("page", type=int),
+        "per_page": args.get("per_page", type=int),
     }
 
 
@@ -43,13 +45,14 @@ class PublicOfferList(MethodView):
         summary="Lister les offres actives",
         description=(
             "Filtres : `category_id`, `q`, `min_price`, `max_price`, `min_discount`. "
+            "Pagination : `page`, `per_page` (défaut 48, max 100). "
             "Tri distance : `sort=distance` avec `latitude` et `longitude`."
         ),
         security=[],
     )
     def get(self):
-        offers = _service.list_public_offers(_parse_query_args())
-        return ApiResponse.ok(data={"offers": offers})
+        payload = _service.list_public_offers(_parse_query_args())
+        return ApiResponse.ok(data=payload)
 
 
 @offers_blp.route("/<int:offer_id>")

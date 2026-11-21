@@ -15,7 +15,6 @@ const secondaryNav = [
   { to: '/espace', label: 'Nouveautés', end: true },
   { to: '/espace', label: 'Top offres', badge: 'Hot' as const },
   { to: '/espace/reservations', label: 'Mes réservations' },
-  { to: '/espace/notifications', label: 'Alertes' },
 ]
 
 export function ConsumerTopBar() {
@@ -114,21 +113,16 @@ export function ConsumerTopBar() {
             ) : null}
             {user?.role === 'CONSOMMATEUR' ? (
               <>
-                <AccountNavLink to="/espace/profil" label="Compte" icon="user" />
-                <Link to="/espace/profil" className="hidden flex-col items-center gap-0.5 text-[10px] font-semibold text-gbandjo-muted transition hover:text-gbandjo-green sm:flex">
+                <HeaderNotificationButton unread={unread} />
+                <Link
+                  to="/espace/profil"
+                  className="hidden flex-col items-center gap-0.5 text-[10px] font-semibold text-gbandjo-muted transition hover:text-gbandjo-green sm:flex"
+                  aria-label="Favoris"
+                >
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-white">
                     <Icon name="heart" className="h-5 w-5" />
                   </span>
-                  Favoris
-                </Link>
-                <Link
-                  to="/espace/reservations"
-                  className="relative flex flex-col items-center gap-0.5 text-[10px] font-semibold text-gbandjo-muted transition hover:text-gbandjo-green"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-white">
-                    <Icon name="reservations" className="h-5 w-5" />
-                  </span>
-                  Réservations
+                  
                 </Link>
                 <div ref={menuRef} className="relative hidden sm:block">
                   <button
@@ -141,7 +135,7 @@ export function ConsumerTopBar() {
                     </span>
                   </button>
                   {menuOpen ? (
-                    <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} unread={unread} />
+                    <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} />
                   ) : null}
                 </div>
               </>
@@ -175,7 +169,7 @@ export function ConsumerTopBar() {
                     {user.first_name?.[0] ?? 'C'}
                   </button>
                   {menuOpen ? (
-                    <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} unread={unread} />
+                    <AccountDropdown user={user} onLogout={() => void handleLogout()} onClose={() => setMenuOpen(false)} />
                   ) : null}
                 </>
               ) : (
@@ -226,28 +220,26 @@ export function ConsumerTopBar() {
               ) : null}
             </NavLink>
           ))}
-          <span className="ml-auto text-xs text-gbandjo-muted">
-            {unread > 0 ? (
-              <Link to="/espace/notifications" className="font-semibold text-gbandjo-orange">
-                {unread} notification{unread > 1 ? 's' : ''}
-              </Link>
-            ) : (
-              'Livraison / retrait selon le commerce'
-            )}
-          </span>
+          <span className="ml-auto text-xs text-gbandjo-muted">Livraison / retrait selon le commerce</span>
         </div>
       </nav>
     </header>
   )
 }
 
-function AccountNavLink({ to, label, icon }: { to: string; label: string; icon: 'user' }) {
+function HeaderNotificationButton({ unread }: { unread: number }) {
   return (
-    <Link to={to} className="hidden flex-col items-center gap-0.5 text-[10px] font-semibold text-gbandjo-muted transition hover:text-gbandjo-green sm:flex">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-white">
-        <Icon name={icon} className="h-5 w-5" />
-      </span>
-      {label}
+    <Link
+      to="/espace/notifications"
+      className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gbandjo-border bg-white text-gbandjo-muted transition hover:border-gbandjo-green hover:text-gbandjo-green"
+      aria-label={unread > 0 ? `Notifications, ${unread} non lue${unread > 1 ? 's' : ''}` : 'Notifications'}
+    >
+      <Icon name="bell" className="h-5 w-5" />
+      {unread > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      ) : null}
     </Link>
   )
 }
@@ -273,12 +265,10 @@ function GuestDropdown({ onClose }: { onClose: () => void }) {
 
 function AccountDropdown({
   user,
-  unread,
   onLogout,
   onClose,
 }: {
   user: ReturnType<typeof useAuthStore.getState>['user']
-  unread: number
   onLogout: () => void
   onClose: () => void
 }) {
@@ -293,8 +283,11 @@ function AccountDropdown({
       <Link to="/espace/profil" className="flex items-center gap-2 px-4 py-2.5 text-sm" onClick={onClose}>
         Mon profil
       </Link>
-      <Link to="/espace/notifications" className="flex items-center gap-2 px-4 py-2.5 text-sm" onClick={onClose}>
-        Notifications {unread > 0 ? `(${unread})` : ''}
+      <Link to="/espace/reservations" className="flex items-center gap-2 px-4 py-2.5 text-sm" onClick={onClose}>
+        Mes réservations
+      </Link>
+      <Link to="/" className="block border-t px-4 py-2.5 text-sm text-gbandjo-muted" onClick={onClose}>
+        Site vitrine
       </Link>
       <button type="button" onClick={onLogout} className="w-full border-t px-4 py-2.5 text-left text-sm text-red-600">
         Déconnexion

@@ -36,14 +36,21 @@ export type ConsumerOffer = {
   status: string
   distance_km?: number | null
   product?: {
+    id?: number
     name?: string
+    description?: string | null
     image_url?: string | null
     category_name?: string | null
+    images?: Array<{ id: number; url: string; sort_order: number }>
   }
   store?: {
+    id?: number
     name?: string
     city?: string | null
     address?: string | null
+    phone?: string | null
+    latitude?: number
+    longitude?: number
   }
 }
 
@@ -53,8 +60,18 @@ export type Category = {
   slug?: string
 }
 
+export type ReservationStoreSummary = {
+  id: number
+  name: string
+  address: string
+  phone?: string | null
+  latitude: number
+  longitude: number
+}
+
 export type Reservation = {
   id: number
+  reference: string
   offer_id: number
   offer_label?: string | null
   consumer_id: number
@@ -65,6 +82,11 @@ export type Reservation = {
   expires_at: string
   processed_at?: string | null
   reason?: string | null
+  store?: ReservationStoreSummary | null
+}
+
+export type ReservationDetail = Reservation & {
+  store: ReservationStoreSummary | null
 }
 
 export type Store = {

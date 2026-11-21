@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models import Offer, Product, Store
@@ -60,16 +60,16 @@ class OfferRepository:
         )
         return list(self._session.scalars(statement))
 
-    def list_active_filtered(
+    def _apply_consumer_filters(
         self,
+        statement,
         *,
         category_id: int | None = None,
         search: str | None = None,
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
         min_discount: Decimal | None = None,
-    ) -> list[Offer]:
-        statement = self._consumer_base_statement()
+    ):
         if category_id is not None:
             statement = statement.where(Product.category_id == category_id)
         if search:
@@ -81,10 +81,66 @@ class OfferRepository:
             statement = statement.where(Offer.discounted_price >= min_price)
         if max_price is not None:
             statement = statement.where(Offer.discounted_price <= max_price)
-        offers = list(self._session.scalars(statement))
         if min_discount is not None:
-            offers = [o for o in offers if o.discount_percentage >= min_discount]
-        return offers
+            reduction = (Offer.initial_price - Offer.discounted_price) / Offer.initial_price * 100
+            statement = statement.where(reduction >= min_discount)
+        return statement
+
+    def count_active_filtered(
+        self,
+        *,
+        category_id: int | None = None,
+        search: str | None = None,
+        min_price: Decimal | None = None,
+        max_price: Decimal | None = None,
+        min_discount: Decimal | None = None,
+    ) -> int:
+        statement = (
+            select(func.count())
+            .select_from(Offer)
+            .join(Product)
+            .join(Store, Product.store_id == Store.id)
+            .where(
+                Offer.status == OfferStatus.ACTIVE,
+                Store.validation_status == ValidationStatus.VALIDE,
+                Product.is_active.is_(True),
+                Offer.ends_at > utcnow(),
+                Offer.available_quantity > 0,
+            )
+        )
+        statement = self._apply_consumer_filters(
+            statement,
+            category_id=category_id,
+            search=search,
+            min_price=min_price,
+            max_price=max_price,
+            min_discount=min_discount,
+        )
+        return int(self._session.scalar(statement) or 0)
+
+    def list_active_filtered(
+        self,
+        *,
+        category_id: int | None = None,
+        search: str | None = None,
+        min_price: Decimal | None = None,
+        max_price: Decimal | None = None,
+        min_discount: Decimal | None = None,
+        page: int = 1,
+        per_page: int = 48,
+    ) -> list[Offer]:
+        statement = self._consumer_base_statement()
+        statement = self._apply_consumer_filters(
+            statement,
+            category_id=category_id,
+            search=search,
+            min_price=min_price,
+            max_price=max_price,
+            min_discount=min_discount,
+        )
+        statement = statement.order_by(Offer.ends_at.asc(), Offer.id.desc())
+        statement = statement.offset(max(0, page - 1) * per_page).limit(per_page)
+        return list(self._session.scalars(statement))
 
     def add(self, offer: Offer) -> Offer:
         self._session.add(offer)

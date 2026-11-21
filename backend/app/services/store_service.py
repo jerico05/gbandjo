@@ -8,7 +8,11 @@ from sqlalchemy.exc import IntegrityError
 from app.extensions import db
 from app.models import Store
 from app.models.enums import UserRole, ValidationStatus
+from app.repositories.offer_repository import OfferRepository
 from app.repositories.store_repository import StoreRepository
+from app.services.auth_service import AuthService
+from app.services.offer_service import OfferService
+from app.services.product_service import ProductService
 from app.utils.responses import ApiError
 
 
@@ -106,6 +110,29 @@ class StoreService:
                 raise ApiError("Statut de validation inconnu.", status=422) from err
         stores = self._stores.list_by_validation_status(status)
         return [self.serialize_store(s) for s in stores]
+
+    def get_store_detail_admin(self, admin, store_id: int) -> dict[str, Any]:
+        self._ensure_admin(admin)
+        store = self._stores.find_by_id(store_id)
+        if store is None:
+            raise ApiError("Commerce introuvable.", status=404)
+        products = ProductService().list_products(store)
+        offers_raw = OfferRepository(db.session).list_for_store(store.id)
+        offer_serializer = OfferService()
+        owner = AuthService().serialize_user(store.owner) if store.owner else None
+        return {
+            "store": self.serialize_store(store),
+            "owner": owner,
+            "products": products,
+            "offers": [
+                {
+                    **offer_serializer.serialize_offer_merchant(o),
+                    "store_id": store.id,
+                    "store_name": store.name,
+                }
+                for o in offers_raw
+            ],
+        }
 
     def validate_store(self, admin, store_id: int) -> dict[str, Any]:
         self._ensure_admin(admin)

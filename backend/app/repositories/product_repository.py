@@ -18,7 +18,6 @@ class ProductRepository:
             .options(
                 selectinload(Product.images),
                 selectinload(Product.category),
-                selectinload(Product.offers),
             )
             .order_by(Product.name)
         )

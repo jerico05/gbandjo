@@ -8,6 +8,7 @@ type IconName =
   | 'search'
   | 'bell'
   | 'menu'
+  | 'eye'
 
 type IconProps = {
   name: IconName
@@ -28,6 +29,16 @@ const paths: Record<IconName, ReactElement> = {
   search: <path strokeLinecap="round" strokeLinejoin="round" d="M32 32 42 42M20 34a14 14 0 1 1 0-28 14 14 0 0 1 0 28Z" />,
   bell: <path strokeLinecap="round" strokeLinejoin="round" d="M20 8a12 12 0 0 1 12 12v8l4 4H4l4-4v-8A12 12 0 0 1 20 8Zm0 28a4 4 0 0 0 4-4" />,
   menu: <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h32M8 24h32M8 36h32" />,
+  eye: (
+    <>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 24c0 0 7-9 15-9s15 9 15 9-7 9-15 9-15-9-15-9Z"
+      />
+      <circle cx="24" cy="24" r="5.5" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
 }
 
 export function Icon({ name, className = 'h-5 w-5' }: IconProps) {

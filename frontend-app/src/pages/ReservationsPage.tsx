@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { ReservationStatusBadge } from '../components/ui/StatusBadge'
 import { Button } from '../components/ui/Button'
 import { Container } from '../components/ui/Container'
 import { getApiErrorMessage } from '../lib/api/errors'
 import type { Reservation } from '../lib/api/types'
+import { formatFcfa } from '../lib/utils/formatMoney'
 import { cancelConsumerReservation, listConsumerReservations } from '../lib/services/reservationService'
 
 export function ReservationsPage() {
@@ -42,7 +43,8 @@ export function ReservationsPage() {
     <Container className={inConsumerShell ? 'py-0' : 'py-10'}>
       <h1 className="text-3xl font-extrabold text-gbandjo-ink">Mes réservations</h1>
       <p className="mt-2 max-w-2xl text-sm text-gbandjo-muted">
-        Le règlement se fait uniquement lors du retrait chez le commerçant. Gbandjo ne traite aucun paiement en ligne.
+        Le règlement se fait uniquement lors du retrait chez le commerçant. Après confirmation, téléchargez votre reçu
+        depuis le détail de la réservation.
       </p>
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
       {isLoading ? (
@@ -56,17 +58,24 @@ export function ReservationsPage() {
               key={r.id}
               className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gbandjo-border bg-white p-5"
             >
-              <div>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-xs font-semibold text-gbandjo-green">{r.reference}</p>
                 <p className="font-bold text-gbandjo-ink">{r.offer_label ?? `Offre #${r.offer_id}`}</p>
                 <p className="text-sm text-gbandjo-muted">
-                  Qté {r.quantity}, {r.unit_price} € / unité
+                  Qté {r.quantity}, {formatFcfa(r.unit_price)} / unité
                 </p>
                 <p className="text-xs text-gbandjo-muted">
                   Créée le {new Date(r.created_at).toLocaleString('fr-FR')}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <ReservationStatusBadge status={r.status} />
+                <Link
+                  to={`/espace/reservations/${r.id}`}
+                  className="rounded-xl border border-gbandjo-border px-4 py-2 text-sm font-semibold text-gbandjo-ink hover:border-gbandjo-green"
+                >
+                  Détails
+                </Link>
                 {r.status === 'EN_ATTENTE' ? (
                   <Button variant="outline" type="button" onClick={() => void handleCancel(r.id)}>
                     Annuler

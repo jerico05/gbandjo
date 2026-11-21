@@ -1,5 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
+
+import { catalogCategoryQueryKey } from '../../lib/hooks/useCatalog'
+import { queryClient } from '../../lib/query/queryClient'
+import { fetchCategories, fetchOffers } from '../../lib/services/catalogService'
 
 import { InstallPrompt } from '../pwa/InstallPrompt'
 import { ConsumerBottomNav } from './consumer/ConsumerBottomNav'
@@ -9,6 +13,19 @@ import { ConsumerSearchContext } from './consumer/consumer-search-context'
 
 export function ConsumerShell() {
   const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: catalogCategoryQueryKey,
+      queryFn: fetchCategories,
+      staleTime: 5 * 60_000,
+    })
+    void queryClient.prefetchQuery({
+      queryKey: ['catalog', 'offers', { page: 1, per_page: 48 }],
+      queryFn: () => fetchOffers({ page: 1, per_page: 48 }),
+      staleTime: 45_000,
+    })
+  }, [])
 
   return (
     <ConsumerSearchContext.Provider value={{ query, setQuery }}>

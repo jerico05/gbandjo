@@ -112,8 +112,9 @@ export function MerchantStoreSection({ store, onUpdated, variant = 'default' }: 
                   {store.phone ? ` (${store.phone})` : ''}
                 </p>
                 {savedCoords ? (
-                  <p className="mt-1 font-mono text-[11px] text-gbandjo-muted">
-                    GPS : {store.latitude.toFixed(5)}, {store.longitude.toFixed(5)}
+                  <p className="mt-1 flex items-center gap-1.5 font-mono text-[11px] text-gbandjo-muted">
+                    <Icon name="location" className="h-3.5 w-3.5 shrink-0 text-gbandjo-green" />
+                    {store.latitude.toFixed(5)}, {store.longitude.toFixed(5)}
                   </p>
                 ) : null}
               </>

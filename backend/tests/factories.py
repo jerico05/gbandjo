@@ -111,4 +111,8 @@ def create_reservation(offer=None, consumer=None, **fields):
     reservation = Reservation(**values)
     db.session.add(reservation)
     db.session.flush()
+    if not reservation.reference:
+        from app.utils.reservation_reference import build_reservation_reference
+
+        reservation.reference = build_reservation_reference(reservation.id, reservation.created_at)
     return reservation

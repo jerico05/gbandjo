@@ -1,14 +1,16 @@
 import type { ConsumerOffer } from '../../lib/api/types'
 import { OfferCard } from '../marketplace/OfferCard'
 import { Button } from '../ui/Button'
+import { OfferGridSkeleton } from '../ui/CatalogSkeleton'
 import { Container } from '../ui/Container'
 
 type FeaturedOffersSectionProps = {
   offers: ConsumerOffer[]
   isLiveData: boolean
+  isLoading?: boolean
 }
 
-export function FeaturedOffersSection({ offers, isLiveData }: FeaturedOffersSectionProps) {
+export function FeaturedOffersSection({ offers, isLiveData, isLoading }: FeaturedOffersSectionProps) {
   const top = offers.slice(0, 8)
 
   return (
@@ -28,7 +30,9 @@ export function FeaturedOffersSection({ offers, isLiveData }: FeaturedOffersSect
             Voir tout le catalogue
           </Button>
         </div>
-        {top.length === 0 ? (
+        {isLoading && top.length === 0 ? (
+          <OfferGridSkeleton count={4} />
+        ) : top.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-gbandjo-border bg-gbandjo-surface py-16 text-center text-gbandjo-muted">
             Les premières offres apparaîtront ici dès qu&apos;un commerce sera actif.
           </p>

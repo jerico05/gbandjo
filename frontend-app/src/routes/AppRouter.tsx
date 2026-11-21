@@ -11,6 +11,7 @@ import { NotificationsPage } from '../pages/NotificationsPage'
 import { OfferDetailPage } from '../pages/OfferDetailPage'
 import { LegacyOfferRedirect } from './LegacyOfferRedirect'
 import { ProfilPage } from '../pages/ProfilPage'
+import { ConsumerReservationDetailPage } from '../pages/consumer/ConsumerReservationDetailPage'
 import { ReservationsPage } from '../pages/ReservationsPage'
 import { MerchantDashboardPage } from '../pages/merchant/MerchantDashboardPage'
 import { MerchantOffersPage } from '../pages/merchant/MerchantOffersPage'
@@ -38,6 +39,14 @@ export function AppRouter() {
           element={
             <RequireAuth roles={['CONSOMMATEUR']}>
               <ReservationsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="reservations/:id"
+          element={
+            <RequireAuth roles={['CONSOMMATEUR']}>
+              <ConsumerReservationDetailPage />
             </RequireAuth>
           }
         />

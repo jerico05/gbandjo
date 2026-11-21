@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, Numeric, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.extensions import db
@@ -28,6 +28,7 @@ class Reservation(db.Model):
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    reference: Mapped[str | None] = mapped_column("reference", String(32), unique=True, index=True)
     offer_id: Mapped[int] = mapped_column("offre_id", BigInteger, ForeignKey("offre.id"))
     consumer_id: Mapped[int] = mapped_column("consommateur_id", BigInteger, ForeignKey("utilisateur.id"))
     quantity: Mapped[int] = mapped_column("quantite", Integer)

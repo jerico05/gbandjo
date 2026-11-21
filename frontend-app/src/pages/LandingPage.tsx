@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { MarketplaceServiceBar } from '../components/marketplace/MarketplaceServiceBar'
 import { CategoriesSection } from '../components/marketing/CategoriesSection'
@@ -6,39 +6,30 @@ import { FeaturedOffersSection } from '../components/marketing/FeaturedOffersSec
 import { HeroSection } from '../components/marketing/HeroSection'
 import { SolutionsSection } from '../components/marketing/SolutionsSection'
 import { StepsSection } from '../components/marketing/StepsSection'
-import type { Category, ConsumerOffer } from '../lib/api/types'
-import { fetchCategories, fetchOffers } from '../lib/services/catalogService'
+import { useCategories, useFeaturedOffers } from '../lib/hooks/useCatalog'
+import { logoutCurrentSession } from '../lib/services/sessionLogout'
+import { useAuthStore } from '../stores/authStore'
 
 export function LandingPage() {
-  const [offers, setOffers] = useState<ConsumerOffer[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLiveData, setIsLiveData] = useState(false)
+  const isAuthenticated = useAuthStore((s) => Boolean(s.user || s.accessToken || s.refreshToken))
 
   useEffect(() => {
-    let cancelled = false
+    if (!isAuthenticated) return
+    void logoutCurrentSession()
+  }, [isAuthenticated])
 
-    async function load() {
-      const [offersResult, categoriesResult] = await Promise.all([
-        fetchOffers(),
-        fetchCategories().catch(() => []),
-      ])
-      if (cancelled) return
-      setOffers(offersResult.offers)
-      setIsLiveData(offersResult.source === 'api')
-      setCategories(categoriesResult)
-    }
+  const categoriesQuery = useCategories()
+  const offersQuery = useFeaturedOffers(8)
 
-    void load()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const categories = categoriesQuery.data ?? []
+  const offers = offersQuery.data?.offers ?? []
+  const isLiveData = offersQuery.data?.source === 'api'
 
   return (
     <>
       <HeroSection />
       <CategoriesSection categories={categories} />
-      <FeaturedOffersSection offers={offers} isLiveData={isLiveData} />
+      <FeaturedOffersSection offers={offers} isLiveData={isLiveData} isLoading={offersQuery.isLoading} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <MarketplaceServiceBar />
       </div>

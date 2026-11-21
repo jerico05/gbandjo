@@ -54,6 +54,24 @@ class ReservationRepository:
         statement = select(Offer).where(Offer.id == offer_id).with_for_update()
         return self._session.scalar(statement)
 
+    def find_active_by_consumer_and_offer(
+        self, consumer_id: int, offer_id: int
+    ) -> Reservation | None:
+        """Réservation encore active (en attente ou confirmée) pour un couple consommateur / offre."""
+        statement = (
+            select(Reservation)
+            .where(
+                Reservation.consumer_id == consumer_id,
+                Reservation.offer_id == offer_id,
+                Reservation.status.in_(
+                    (ReservationStatus.EN_ATTENTE, ReservationStatus.CONFIRMEE)
+                ),
+            )
+            .order_by(Reservation.created_at.desc())
+            .limit(1)
+        )
+        return self._session.scalar(statement)
+
     def find_pending_expired(self, at=None) -> list[Reservation]:
         moment = at or utcnow()
         return list(

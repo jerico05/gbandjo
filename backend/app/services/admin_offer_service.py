@@ -47,6 +47,14 @@ class AdminOfferService:
             "pagination": pagination_meta(total, page, per_page),
         }
 
+    def get_offer_detail(self, offer_id: int) -> dict[str, Any]:
+        offer = self._offers.find_detail(offer_id)
+        if offer is None:
+            raise ApiError("Offre introuvable.", status=404)
+        payload = self._serializer.serialize_offer_consumer(offer)
+        payload["store"]["validation_status"] = offer.product.store.validation_status.value
+        return payload
+
     def deactivate(self, offer_id: int) -> dict[str, Any]:
         offer = self._offers.find_by_id(offer_id)
         if offer is None:

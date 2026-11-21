@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { useGeolocation } from '../../lib/hooks/useGeolocation'
 import { cn } from '../../lib/utils/cn'
+import { Icon } from '../icons/Icon'
 import { Button } from '../ui/Button'
 
 type StoreGeolocationPanelProps = {
@@ -44,19 +45,30 @@ export function StoreGeolocationPanel({
 
   return (
     <div className={cn('rounded-2xl border border-gbandjo-border bg-gbandjo-surface/80 p-4 sm:p-5', className)}>
-      <p className="text-sm font-semibold text-gbandjo-ink">Position du commerce</p>
-      <p className="mt-1 text-xs text-gbandjo-muted">
-        {hasSavedCoords
-          ? 'Coordonnées chargées depuis votre fiche enregistrée.'
-          : 'Placez-vous au point de vente : la position GPS est détectée à l’ouverture du formulaire.'}
-      </p>
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gbandjo-green-light text-gbandjo-green">
+          <Icon name="location" className="h-5 w-5" title="Localisation" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-gbandjo-ink">Localisation du commerce</p>
+          <p className="mt-1 text-xs text-gbandjo-muted">
+            {hasSavedCoords
+              ? 'Coordonnées chargées depuis votre fiche enregistrée.'
+              : 'Placez-vous au point de vente : la position GPS est détectée à l’ouverture du formulaire.'}
+          </p>
+        </div>
+      </div>
 
       {hasCoords ? (
-        <p className="mt-3 rounded-xl border border-gbandjo-border bg-white px-3 py-2 font-mono text-xs text-gbandjo-ink">
-          {formatCoord(latitude)}, {formatCoord(longitude)}
+        <p className="mt-3 flex items-center gap-2 rounded-xl border border-gbandjo-border bg-white px-3 py-2 font-mono text-xs text-gbandjo-ink">
+          <Icon name="location" className="h-4 w-4 shrink-0 text-gbandjo-green" />
+          <span>
+            {formatCoord(latitude)}, {formatCoord(longitude)}
+          </span>
         </p>
       ) : (
-        <p className="mt-3 text-xs text-gbandjo-muted">
+        <p className="mt-3 flex items-center gap-2 text-xs text-gbandjo-muted">
+          <Icon name="location" className="h-4 w-4 shrink-0 opacity-60" />
           {isLoading ? 'Détection de la position en cours…' : 'En attente d’une position GPS.'}
         </p>
       )}
@@ -66,11 +78,12 @@ export function StoreGeolocationPanel({
       <Button
         type="button"
         variant="outline"
-        className="mt-4 !py-2 !px-4 text-sm"
+        className="mt-4 gap-2 !px-4 !py-2 text-sm"
         disabled={isLoading}
         onClick={() => requestPosition()}
       >
-        {isLoading ? 'Localisation en cours…' : hasCoords ? 'Actualiser la position GPS' : 'Détecter ma position'}
+        <Icon name="location" className="h-4 w-4" />
+        {isLoading ? 'Localisation en cours…' : hasCoords ? 'Actualiser la position' : 'Détecter ma position'}
       </Button>
     </div>
   )

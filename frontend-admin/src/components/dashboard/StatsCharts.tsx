@@ -59,7 +59,7 @@ export function StatsCharts({ stats }: StatsChartsProps) {
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-gbandjo-border bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-gbandjo-border bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-bold text-gbandjo-ink">{title}</h2>
       {children}
     </section>

@@ -3,8 +3,18 @@ from marshmallow import Schema, fields, validate
 from app.schemas.common import EnvelopeSchema
 
 
+class ReservationStoreEmbedSchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
+    address = fields.Str()
+    phone = fields.Str(allow_none=True)
+    latitude = fields.Float()
+    longitude = fields.Float()
+
+
 class ReservationOutputSchema(Schema):
     id = fields.Int()
+    reference = fields.Str()
     offer_id = fields.Int()
     offer_label = fields.Str(allow_none=True)
     consumer_id = fields.Int()
@@ -16,10 +26,15 @@ class ReservationOutputSchema(Schema):
     processed_at = fields.Str(allow_none=True)
     reason = fields.Str(allow_none=True)
     cancelled_by_role = fields.Str(allow_none=True)
+    store = fields.Nested(ReservationStoreEmbedSchema, allow_none=True)
 
 
 class ReservationCreateInputSchema(Schema):
     offer_id = fields.Int(required=True)
+    quantity = fields.Int(required=True, validate=validate.Range(min=1))
+
+
+class ReservationUpdateInputSchema(Schema):
     quantity = fields.Int(required=True, validate=validate.Range(min=1))
 
 

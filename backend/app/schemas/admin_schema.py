@@ -1,7 +1,9 @@
 from marshmallow import Schema, fields, validate
 
 from app.schemas.common import EnvelopeSchema
-from app.schemas.offer_schema import OfferMerchantOutputSchema
+from app.schemas.offer_schema import OfferConsumerOutputSchema, OfferMerchantOutputSchema
+from app.schemas.product_schema import ProductOutputSchema
+from app.schemas.store_schema import StoreOutputSchema
 from app.schemas.user_schema import UserOutputSchema
 from app.schemas.notification_schema import PaginationSchema
 
@@ -50,6 +52,34 @@ class AdminOfferDataSchema(Schema):
 
 class AdminOfferResponseSchema(EnvelopeSchema):
     data = fields.Nested(AdminOfferDataSchema)
+
+
+class AdminOfferDetailDataSchema(Schema):
+    offer = fields.Nested(OfferConsumerOutputSchema)
+
+
+class AdminOfferDetailResponseSchema(EnvelopeSchema):
+    data = fields.Nested(AdminOfferDetailDataSchema)
+
+
+class AdminStoreDetailDataSchema(Schema):
+    store = fields.Nested(StoreOutputSchema)
+    owner = fields.Nested(UserOutputSchema, allow_none=True)
+    products = fields.List(fields.Nested(ProductOutputSchema))
+    offers = fields.List(fields.Nested(AdminOfferOutputSchema))
+
+
+class AdminStoreDetailResponseSchema(EnvelopeSchema):
+    data = fields.Nested(AdminStoreDetailDataSchema)
+
+
+class AdminUserDetailDataSchema(Schema):
+    user = fields.Nested(UserOutputSchema)
+    store = fields.Nested(StoreOutputSchema, allow_none=True)
+
+
+class AdminUserDetailResponseSchema(EnvelopeSchema):
+    data = fields.Nested(AdminUserDetailDataSchema)
 
 
 class DashboardStatsSchema(Schema):

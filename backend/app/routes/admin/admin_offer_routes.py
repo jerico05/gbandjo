@@ -9,6 +9,7 @@ from app.middleware.auth_middleware import jwt_required
 from app.middleware.role_middleware import require_role
 from app.models.enums import UserRole
 from app.schemas.admin_schema import (
+    AdminOfferDetailResponseSchema,
     AdminOfferListResponseSchema,
     AdminOfferResponseSchema,
 )
@@ -43,6 +44,21 @@ class AdminOfferList(MethodView):
             per_page=request.args.get("per_page", type=int),
         )
         return ApiResponse.ok(data=data)
+
+
+@admin_offers_blp.route("/<int:offer_id>")
+class AdminOfferDetail(MethodView):
+    @jwt_required
+    @require_role(UserRole.ADMIN)
+    @admin_offers_blp.response(HTTPStatus.OK, AdminOfferDetailResponseSchema)
+    @admin_offers_blp.alt_response(404, schema=EnvelopeErrorSchema)
+    @admin_offers_blp.doc(
+        summary="Détail d'une offre (produit, images, commerce)",
+        security=[{"bearerAuth": []}],
+    )
+    def get(self, offer_id: int):
+        offer = _service.get_offer_detail(offer_id)
+        return ApiResponse.ok(data={"offer": offer})
 
 
 @admin_offers_blp.route("/<int:offer_id>/deactivate")

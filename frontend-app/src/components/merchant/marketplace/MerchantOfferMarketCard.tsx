@@ -2,6 +2,7 @@ import { Icon } from '../../icons/Icon'
 import { Badge } from '../../ui/Badge'
 import { Button } from '../../ui/Button'
 import type { MerchantOffer } from '../../../lib/api/types'
+import { formatFcfa } from '../../../lib/utils/formatMoney'
 
 type MerchantOfferMarketCardProps = {
   offer: MerchantOffer
@@ -33,8 +34,8 @@ export function MerchantOfferMarketCard({ offer, onDeactivate, onWithdraw }: Mer
           {offer.product_name ?? `Produit #${offer.product_id}`}
         </h3>
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-extrabold text-gbandjo-green">{offer.discounted_price} €</span>
-          <span className="text-sm text-gbandjo-muted line-through">{offer.initial_price} €</span>
+          <span className="text-xl font-extrabold text-gbandjo-green">{formatFcfa(offer.discounted_price)}</span>
+          <span className="text-sm text-gbandjo-muted line-through">{formatFcfa(offer.initial_price)}</span>
         </div>
         <p className="text-xs text-gbandjo-muted">
           Stock : {offer.available_quantity}, fin le {new Date(offer.ends_at).toLocaleDateString('fr-FR')}

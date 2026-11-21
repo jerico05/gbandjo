@@ -1,5 +1,12 @@
 import { apiClient } from '../api/client'
-import type { ApiEnvelope, Reservation } from '../api/types'
+import type { ApiEnvelope, Reservation, ReservationDetail } from '../api/types'
+
+export async function getConsumerReservation(reservationId: number) {
+  const { data } = await apiClient.get<ApiEnvelope<{ reservation: ReservationDetail }>>(
+    `/api/consumer/reservations/${reservationId}`,
+  )
+  return data.data.reservation
+}
 
 export async function listConsumerReservations() {
   const { data } = await apiClient.get<ApiEnvelope<{ reservations: Reservation[] }>>(
@@ -19,6 +26,14 @@ export async function createReservation(offerId: number, quantity: number) {
 export async function cancelConsumerReservation(reservationId: number) {
   const { data } = await apiClient.post<ApiEnvelope<{ reservation: Reservation }>>(
     `/api/consumer/reservations/${reservationId}/cancel`,
+  )
+  return data.data.reservation
+}
+
+export async function updateConsumerReservation(reservationId: number, quantity: number) {
+  const { data } = await apiClient.patch<ApiEnvelope<{ reservation: ReservationDetail }>>(
+    `/api/consumer/reservations/${reservationId}`,
+    { quantity },
   )
   return data.data.reservation
 }

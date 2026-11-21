@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { MerchantWorkspace } from '../components/merchant/MerchantWorkspace'
 import { Button } from '../components/ui/Button'
@@ -78,6 +78,14 @@ export function NotificationsPage() {
           >
             <p className="text-sm font-medium text-gbandjo-ink">{n.message}</p>
             <p className="mt-1 text-xs text-gbandjo-muted">{new Date(n.created_at).toLocaleString('fr-FR')}</p>
+            {inConsumerShell && n.reservation_id ? (
+              <Link
+                to={`/espace/reservations/${n.reservation_id}`}
+                className="mt-2 inline-block text-xs font-semibold text-gbandjo-green hover:underline"
+              >
+                Voir la réservation
+              </Link>
+            ) : null}
             {!n.is_read ? (
               <button
                 type="button"

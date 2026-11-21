@@ -30,6 +30,7 @@ export type IconName =
   | 'truck'
   | 'shield'
   | 'refresh'
+  | 'location'
 
 type IconProps = {
   name: IconName
@@ -164,6 +165,16 @@ const paths: Record<IconName, ReactElement> = {
       strokeLinejoin="round"
       d="M38 18A14 14 0 1 0 22 38m16-20v8h-8"
     />
+  ),
+  location: (
+    <>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M24 6C17 6 12 11.5 12 18.5c0 8 12 23.5 12 23.5S36 26.5 36 18.5C36 11.5 31 6 24 6Z"
+      />
+      <circle cx="24" cy="18.5" r="4.5" strokeLinecap="round" strokeLinejoin="round" />
+    </>
   ),
 }
 

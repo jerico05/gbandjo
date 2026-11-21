@@ -9,6 +9,7 @@ from app.middleware.auth_middleware import jwt_required
 from app.middleware.role_middleware import require_role
 from app.models.enums import UserRole
 from app.schemas.common import EnvelopeErrorSchema
+from app.schemas.admin_schema import AdminStoreDetailResponseSchema
 from app.schemas.store_schema import (
     StoreListResponseSchema,
     StoreRejectInputSchema,
@@ -42,6 +43,21 @@ class AdminStoreList(MethodView):
         status = request.args.get("validation_status")
         stores = _service.list_stores(g.user, status)
         return ApiResponse.ok(data={"stores": stores})
+
+
+@admin_stores_blp.route("/<int:store_id>")
+class AdminStoreDetail(MethodView):
+    @jwt_required
+    @require_role(UserRole.ADMIN)
+    @admin_stores_blp.response(HTTPStatus.OK, AdminStoreDetailResponseSchema)
+    @admin_stores_blp.alt_response(404, schema=EnvelopeErrorSchema)
+    @admin_stores_blp.doc(
+        summary="Fiche commerce : propriétaire, produits et offres",
+        security=[{"bearerAuth": []}],
+    )
+    def get(self, store_id: int):
+        payload = _service.get_store_detail_admin(g.user, store_id)
+        return ApiResponse.ok(data=payload)
 
 
 @admin_stores_blp.route("/<int:store_id>/validate")

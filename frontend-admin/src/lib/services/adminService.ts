@@ -1,5 +1,14 @@
 import { apiClient } from '../api/client'
-import type { ApiEnvelope, DashboardStats, PaginationMeta, Store, UserSummary } from '../api/types'
+import type {
+  AdminOfferDetail,
+  AdminStoreDetail,
+  AdminUserDetail,
+  ApiEnvelope,
+  DashboardStats,
+  PaginationMeta,
+  Store,
+  UserSummary,
+} from '../api/types'
 
 export async function fetchDashboardStats() {
   const { data } = await apiClient.get<ApiEnvelope<{ stats: DashboardStats }>>('/api/admin/dashboard/stats')
@@ -42,10 +51,31 @@ export async function rejectStore(storeId: number, rejection_reason: string) {
 export async function listAdminOffers(status?: string, page = 1, per_page = 20) {
   const { data } = await apiClient.get<
     ApiEnvelope<{
-      offers: Array<{ id: number; product_name?: string; status: string; store_name?: string }>
+      offers: Array<{
+        id: number
+        product_name?: string
+        status: string
+        store_name?: string
+        store_id?: number
+      }>
       pagination: PaginationMeta
     }>
   >('/api/admin/offers', { params: { status: status || undefined, page, per_page } })
+  return data.data
+}
+
+export async function fetchAdminOfferDetail(offerId: number) {
+  const { data } = await apiClient.get<ApiEnvelope<{ offer: AdminOfferDetail }>>(`/api/admin/offers/${offerId}`)
+  return data.data.offer
+}
+
+export async function fetchAdminStoreDetail(storeId: number) {
+  const { data } = await apiClient.get<ApiEnvelope<AdminStoreDetail>>(`/api/admin/stores/${storeId}`)
+  return data.data
+}
+
+export async function fetchAdminUserDetail(userId: number) {
+  const { data } = await apiClient.get<ApiEnvelope<AdminUserDetail>>(`/api/admin/users/${userId}`)
   return data.data
 }
 

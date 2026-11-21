@@ -70,9 +70,41 @@ class OfferService:
             "status": offer.status.value,
         }
 
+    @staticmethod
+    def _primary_image_url(product) -> str | None:
+        if not product.images:
+            return None
+        return product.images[0].url
+
+    def serialize_offer_consumer_card(self, offer: Offer, *, distance_km: float | None = None) -> dict[str, Any]:
+        """Payload allégé pour les listes catalogue (moins de JSON, chargement plus rapide)."""
+        product = offer.product
+        store = product.store
+        return {
+            "id": offer.id,
+            "initial_price": str(offer.initial_price),
+            "discounted_price": str(offer.discounted_price),
+            "discount_percentage": str(offer.discount_percentage),
+            "available_quantity": offer.available_quantity,
+            "starts_at": offer.starts_at.isoformat(),
+            "ends_at": offer.ends_at.isoformat(),
+            "status": offer.status.value,
+            "distance_km": round(distance_km, 2) if distance_km is not None else None,
+            "product": {
+                "name": product.name,
+                "category_name": product.category.name if product.category else None,
+                "image_url": self._primary_image_url(product),
+            },
+            "store": {
+                "name": store.name,
+                "address": store.address,
+            },
+        }
+
     def serialize_offer_consumer(self, offer: Offer, *, distance_km: float | None = None) -> dict[str, Any]:
         product = offer.product
         store = product.store
+        primary_url = self._primary_image_url(product)
         return {
             "id": offer.id,
             "initial_price": str(offer.initial_price),
@@ -90,6 +122,7 @@ class OfferService:
                 "description": product.description,
                 "category_id": product.category_id,
                 "category_name": product.category.name if product.category else None,
+                "image_url": primary_url,
                 "images": [
                     {"id": img.id, "url": img.url, "sort_order": img.sort_order} for img in product.images
                 ],
@@ -197,17 +230,21 @@ class OfferService:
             offer.status = OfferStatus.DESACTIVEE
             db.session.commit()
 
-    def list_public_offers(self, query: dict[str, Any]) -> list[dict[str, Any]]:
+    def list_public_offers(self, query: dict[str, Any]) -> dict[str, Any]:
         min_p = Decimal(str(query["min_price"])) if query.get("min_price") is not None else None
         max_p = Decimal(str(query["max_price"])) if query.get("max_price") is not None else None
         min_d = Decimal(str(query["min_discount"])) if query.get("min_discount") is not None else None
-        offers = self._offers.list_active_filtered(
+        page = max(1, int(query.get("page") or 1))
+        per_page = min(100, max(1, int(query.get("per_page") or 48)))
+        filters = dict(
             category_id=query.get("category_id"),
             search=query.get("q"),
             min_price=min_p,
             max_price=max_p,
             min_discount=min_d,
         )
+        total = self._offers.count_active_filtered(**filters)
+        offers = self._offers.list_active_filtered(**filters, page=page, per_page=per_page)
         lat = query.get("latitude")
         lon = query.get("longitude")
         sort = query.get("sort")
@@ -222,7 +259,16 @@ class OfferService:
             if lat is None or lon is None:
                 raise ApiError("Les paramètres latitude et longitude sont requis pour le tri par distance.", status=422)
             items.sort(key=lambda pair: pair[0] if pair[0] is not None else float("inf"))
-        return [self.serialize_offer_consumer(o, distance_km=d) for d, o in items]
+        serialized = [self.serialize_offer_consumer_card(o, distance_km=d) for d, o in items]
+        return {
+            "offers": serialized,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": max(1, (total + per_page - 1) // per_page),
+            },
+        }
 
     def get_public_offer(self, offer_id: int) -> dict[str, Any]:
         offer = self._offers.find_detail(offer_id)

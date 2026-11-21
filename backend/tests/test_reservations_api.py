@@ -43,7 +43,9 @@ def test_reservation_confirm_reduit_stock(client, session):
         headers=consumer_headers,
     )
     assert create.status_code == 201
-    reservation_id = create.get_json()["data"]["reservation"]["id"]
+    created = create.get_json()["data"]["reservation"]
+    reservation_id = created["id"]
+    assert created["reference"].startswith("GBJ-")
 
     confirm = client.post(
         f"/api/merchant/reservations/{reservation_id}/confirm",
@@ -74,6 +76,72 @@ def test_survente_confirm_refusee(client, session):
     id2 = r2.get_json()["data"]["reservation"]["id"]
     assert client.post(f"/api/merchant/reservations/{id1}/confirm", headers=merchant_headers).status_code == 200
     assert client.post(f"/api/merchant/reservations/{id2}/confirm", headers=merchant_headers).status_code == 409
+
+
+def test_une_seule_reservation_active_par_offre(client, session):
+    _merchant, offer, consumer = _offer_setup(session)
+    headers = {"Authorization": f"Bearer {_consumer_token(client, consumer)}"}
+    first = client.post(
+        "/api/consumer/reservations",
+        json={"offer_id": offer.id, "quantity": 1},
+        headers=headers,
+    )
+    assert first.status_code == 201
+    second = client.post(
+        "/api/consumer/reservations",
+        json={"offer_id": offer.id, "quantity": 1},
+        headers=headers,
+    )
+    assert second.status_code == 409
+
+
+def test_consommateur_modifie_quantite_en_attente(client, session):
+    merchant, offer, consumer = _offer_setup(session)
+    consumer_headers = {"Authorization": f"Bearer {_consumer_token(client, consumer)}"}
+    merchant_headers = {"Authorization": f"Bearer {_merchant_token(client, merchant)}"}
+    create = client.post(
+        "/api/consumer/reservations",
+        json={"offer_id": offer.id, "quantity": 1},
+        headers=consumer_headers,
+    )
+    rid = create.get_json()["data"]["reservation"]["id"]
+    update = client.patch(
+        f"/api/consumer/reservations/{rid}",
+        json={"quantity": 2},
+        headers=consumer_headers,
+    )
+    assert update.status_code == 200
+    assert update.get_json()["data"]["reservation"]["quantity"] == 2
+
+    assert client.post(f"/api/merchant/reservations/{rid}/confirm", headers=merchant_headers).status_code == 200
+    blocked = client.patch(
+        f"/api/consumer/reservations/{rid}",
+        json={"quantity": 1},
+        headers=consumer_headers,
+    )
+    assert blocked.status_code == 409
+
+
+def test_consumer_reservation_detail_avec_commerce(client, session):
+    merchant, offer, consumer = _offer_setup(session)
+    consumer_headers = {"Authorization": f"Bearer {_consumer_token(client, consumer)}"}
+    merchant_headers = {"Authorization": f"Bearer {_merchant_token(client, merchant)}"}
+    create = client.post(
+        "/api/consumer/reservations",
+        json={"offer_id": offer.id, "quantity": 1},
+        headers=consumer_headers,
+    )
+    rid = create.get_json()["data"]["reservation"]["id"]
+    detail_before = client.get(f"/api/consumer/reservations/{rid}", headers=consumer_headers)
+    assert detail_before.status_code == 200
+    body = detail_before.get_json()["data"]["reservation"]
+    assert body["store"]["address"]
+    assert "latitude" in body["store"]
+
+    assert client.post(f"/api/merchant/reservations/{rid}/confirm", headers=merchant_headers).status_code == 200
+    detail = client.get(f"/api/consumer/reservations/{rid}", headers=consumer_headers)
+    assert detail.status_code == 200
+    assert detail.get_json()["data"]["reservation"]["status"] == "CONFIRMEE"
 
 
 def test_expiration_reservation(client, session):

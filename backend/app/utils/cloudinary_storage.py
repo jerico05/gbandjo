@@ -29,7 +29,7 @@ def upload_product_image(file_stream: BinaryIO, *, product_id: int, filename: st
         api_secret=current_app.config["CLOUDINARY_API_SECRET"],
         secure=True,
     )
-    public_id = f"{current_app.config['CLOUDINARY_FOLDER']}/product_{product_id}_{uuid.uuid4().hex[:12]}"
+    public_id = f"product_{product_id}_{uuid.uuid4().hex[:12]}"
     try:
         result = cloudinary.uploader.upload(
             file_stream,

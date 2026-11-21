@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Icon } from '../../components/icons/Icon'
@@ -6,20 +7,18 @@ import { MerchantKpiCard } from '../../components/merchant/MerchantKpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ReservationStatusBadge } from '../../components/ui/StatusBadge'
-import type { MerchantOffer, Reservation, Store } from '../../lib/api/types'
-import { listMerchantOffers } from '../../lib/services/merchantOfferService'
-import { listProducts } from '../../lib/services/merchantProductService'
-import { listMerchantReservations } from '../../lib/services/reservationService'
-import { fetchMyStore } from '../../lib/services/storeService'
+import type { Store } from '../../lib/api/types'
+import {
+  useMerchantOffers,
+  useMerchantProducts,
+  useMerchantReservations,
+  merchantKeys,
+  useMerchantStore,
+} from '../../lib/hooks/useMerchant'
+import { formatFcfa } from '../../lib/utils/formatMoney'
 import { storeValidationLabel, storeValidationTone } from '../../lib/utils/storeStatus'
 import { useAuthStore } from '../../stores/authStore'
 import { MerchantStoreSection } from './MerchantStoreSection'
-
-function formatEuro(value: number) {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-    value,
-  )
-}
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -34,30 +33,21 @@ const quickActions = [
 
 export function MerchantDashboardPage() {
   const user = useAuthStore((s) => s.user)
-  const [store, setStore] = useState<Store | null>(null)
-  const [offers, setOffers] = useState<MerchantOffer[]>([])
-  const [reservations, setReservations] = useState<Reservation[]>([])
-  const [productCount, setProductCount] = useState(0)
-  const [storeError, setStoreError] = useState('')
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const storeQuery = useMerchantStore()
+  const offersQuery = useMerchantOffers()
+  const reservationsQuery = useMerchantReservations()
+  const productsQuery = useMerchantProducts()
 
-  useEffect(() => {
-    void fetchMyStore()
-      .then(setStore)
-      .catch(() => setStoreError('Aucun commerce enregistré pour ce compte.'))
-
-    void Promise.all([
-      listMerchantOffers().catch(() => [] as MerchantOffer[]),
-      listMerchantReservations().catch(() => [] as Reservation[]),
-      listProducts().catch(() => []),
-    ])
-      .then(([offerList, reservationList, products]) => {
-        setOffers(offerList)
-        setReservations(reservationList)
-        setProductCount(products.length)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+  const store: Store | null = storeQuery.data ?? null
+  const storeError = storeQuery.isError ? 'Aucun commerce enregistré pour ce compte.' : ''
+  const offers = offersQuery.data ?? []
+  const reservations = reservationsQuery.data ?? []
+  const productCount = productsQuery.data?.length ?? 0
+  const loading =
+    (offersQuery.isLoading && !offersQuery.data) ||
+    (reservationsQuery.isLoading && !reservationsQuery.data) ||
+    (productsQuery.isLoading && !productsQuery.data)
 
   const stats = useMemo(() => {
     const activeOffers = offers.filter((o) => o.status === 'ACTIVE').length
@@ -147,7 +137,7 @@ export function MerchantDashboardPage() {
         />
         <MerchantKpiCard
           label="Chiffre estimé"
-          value={loading ? '…' : formatEuro(stats.revenue)}
+          value={loading ? '…' : formatFcfa(stats.revenue)}
           hint={`${stats.confirmed} confirmée(s), ${stats.totalReservations} au total`}
           icon="sparkle"
           accent="green"
@@ -192,7 +182,7 @@ export function MerchantDashboardPage() {
                       </td>
                       <td className="px-4 py-3.5 tabular-nums text-gbandjo-muted">{r.quantity}</td>
                       <td className="px-4 py-3.5 font-semibold tabular-nums text-gbandjo-ink">
-                        {(Number(r.unit_price) * r.quantity).toFixed(2)} €
+                        {formatFcfa(Number(r.unit_price) * r.quantity, { maximumFractionDigits: 0 })}
                       </td>
                       <td className="px-4 py-3.5">
                         <ReservationStatusBadge status={r.status} />
@@ -234,7 +224,7 @@ export function MerchantDashboardPage() {
                       {o.product_name ?? `Produit #${o.product_id}`}
                     </p>
                     <p className="text-xs text-gbandjo-muted">
-                      {o.discounted_price} €, qté {o.available_quantity}
+                      {formatFcfa(o.discounted_price)}, qté {o.available_quantity}
                     </p>
                   </div>
                   <Badge tone="green" className="shrink-0">
@@ -272,7 +262,11 @@ export function MerchantDashboardPage() {
         <p className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-900">{storeError}</p>
       ) : null}
 
-      <MerchantStoreSection store={store} onUpdated={setStore} variant="dashboard" />
+      <MerchantStoreSection
+        store={store}
+        onUpdated={(updated) => queryClient.setQueryData(merchantKeys.store, updated)}
+        variant="dashboard"
+      />
     </div>
   )
 }

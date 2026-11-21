@@ -1,12 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
+import { catalogCategoryQueryKey } from '../../lib/hooks/useCatalog'
+import { merchantKeys } from '../../lib/hooks/useMerchant'
+import { fetchCategories } from '../../lib/services/catalogService'
+import { queryClient } from '../../lib/query/queryClient'
+import { listMerchantOffers } from '../../lib/services/merchantOfferService'
+import { listProducts } from '../../lib/services/merchantProductService'
+import { listMerchantReservations } from '../../lib/services/reservationService'
+import { fetchMyStore } from '../../lib/services/storeService'
 import { MerchantPromoBar } from '../merchant/marketplace/MerchantPromoBar'
 import { MerchantSidebar } from './merchant/MerchantSidebar'
 import { MerchantTopBar } from './merchant/MerchantTopBar'
 
 export function MerchantShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  useEffect(() => {
+    const prefetch = <T,>(queryKey: readonly unknown[], queryFn: () => Promise<T>, staleTime: number) =>
+      void queryClient.prefetchQuery({ queryKey, queryFn, staleTime })
+
+    prefetch(catalogCategoryQueryKey, fetchCategories, 5 * 60_000)
+    prefetch(merchantKeys.store, fetchMyStore, 2 * 60_000)
+    prefetch(merchantKeys.products, listProducts, 60_000)
+    prefetch(merchantKeys.offers, listMerchantOffers, 60_000)
+    prefetch(merchantKeys.reservations, listMerchantReservations, 45_000)
+  }, [])
 
   return (
     <div className="min-h-svh bg-[#f3f5f9]">

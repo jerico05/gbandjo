@@ -12,6 +12,7 @@ from app.schemas.reservation_schema import (
     ReservationCreateInputSchema,
     ReservationListResponseSchema,
     ReservationResponseSchema,
+    ReservationUpdateInputSchema,
 )
 from app.services.reservation_service import ReservationService
 from app.utils.responses import ApiResponse
@@ -43,6 +44,29 @@ class ConsumerReservations(MethodView):
     def post(self, payload):
         reservation = _service.create_reservation(g.user, payload)
         return ApiResponse.created(data={"reservation": reservation}, message="Réservation enregistrée.")
+
+
+@consumer_reservations_blp.route("/<int:reservation_id>")
+class ConsumerReservationDetail(MethodView):
+    @require_role(UserRole.CONSOMMATEUR)
+    @consumer_reservations_blp.response(HTTPStatus.OK, ReservationResponseSchema)
+    @consumer_reservations_blp.doc(summary="Détail d'une réservation", security=[{"bearerAuth": []}])
+    def get(self, reservation_id: int):
+        reservation = _service.get_consumer_reservation(g.user, reservation_id)
+        return ApiResponse.ok(data={"reservation": reservation})
+
+    @require_role(UserRole.CONSOMMATEUR)
+    @consumer_reservations_blp.arguments(ReservationUpdateInputSchema)
+    @consumer_reservations_blp.response(HTTPStatus.OK, ReservationResponseSchema)
+    @consumer_reservations_blp.alt_response(409, schema=EnvelopeErrorSchema)
+    @consumer_reservations_blp.alt_response(422, schema=EnvelopeErrorSchema)
+    @consumer_reservations_blp.doc(
+        summary="Modifier ma réservation (EN_ATTENTE uniquement)",
+        security=[{"bearerAuth": []}],
+    )
+    def patch(self, payload, reservation_id: int):
+        reservation = _service.update_by_consumer(g.user, reservation_id, payload)
+        return ApiResponse.ok(data={"reservation": reservation}, message="Réservation mise à jour.")
 
 
 @consumer_reservations_blp.route("/<int:reservation_id>/cancel")

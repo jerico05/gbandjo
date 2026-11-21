@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import type { ConsumerOffer } from '../../lib/api/types'
+import { formatFcfa } from '../../lib/utils/formatMoney'
 import { Icon } from '../icons/Icon'
 
 type MarketplacePromoTilesProps = {
@@ -29,7 +30,7 @@ export function MarketplacePromoTiles({ offers, offerBasePath }: MarketplaceProm
           <p className="mt-2 text-lg font-extrabold text-gbandjo-ink line-clamp-2">
             −{deal.discount_percentage}% sur {deal.product?.name ?? 'l’offre flash'}
           </p>
-          <p className="mt-1 text-sm text-gbandjo-muted">{deal.discounted_price} €</p>
+          <p className="mt-1 text-sm text-gbandjo-muted">{formatFcfa(deal.discounted_price)}</p>
         </div>
         {deal.product?.image_url ? (
           <img

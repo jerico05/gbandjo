@@ -1,38 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 
 import { MerchantWorkspace } from '../../components/merchant/MerchantWorkspace'
+import { MerchantTableSkeleton } from '../../components/ui/MerchantDataSkeleton'
 import { ReservationStatusBadge } from '../../components/ui/StatusBadge'
 import { Button } from '../../components/ui/Button'
 import { getApiErrorMessage } from '../../lib/api/errors'
-import type { Reservation } from '../../lib/api/types'
+import { formatFcfa } from '../../lib/utils/formatMoney'
+import { merchantKeys, useMerchantReservations } from '../../lib/hooks/useMerchant'
 import {
   confirmMerchantReservation,
-  listMerchantReservations,
   markReservationPickedUp,
   rejectMerchantReservation,
   cancelMerchantReservation,
 } from '../../lib/services/reservationService'
 
 export function MerchantReservationsPage() {
-  const [reservations, setReservations] = useState<Reservation[]>([])
+  const queryClient = useQueryClient()
+  const reservationsQuery = useMerchantReservations()
+  const reservations = reservationsQuery.data ?? []
+  const isLoading = reservationsQuery.isLoading && !reservationsQuery.data
   const [error, setError] = useState('')
-
-  async function load() {
-    try {
-      setReservations(await listMerchantReservations())
-    } catch (err) {
-      setError(getApiErrorMessage(err))
-    }
-  }
-
-  useEffect(() => {
-    void load()
-  }, [])
 
   async function runAction(action: () => Promise<unknown>) {
     try {
       await action()
-      await load()
+      await queryClient.invalidateQueries({ queryKey: merchantKeys.reservations })
     } catch (err) {
       setError(getApiErrorMessage(err))
     }
@@ -41,14 +34,18 @@ export function MerchantReservationsPage() {
   return (
     <MerchantWorkspace title="Réservations reçues">
       {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+      {isLoading ? (
+        <MerchantTableSkeleton rows={4} />
+      ) : (
       <ul className="space-y-4">
         {reservations.map((r) => (
           <li key={r.id} className="rounded-2xl border border-gbandjo-border bg-white p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
+                <p className="font-mono text-xs font-semibold text-gbandjo-green">{r.reference}</p>
                 <p className="font-bold">{r.offer_label ?? `Offre #${r.offer_id}`}</p>
                 <p className="text-sm text-gbandjo-muted">
-                  Qté {r.quantity}, {r.unit_price} €
+                  Qté {r.quantity}, {formatFcfa(r.unit_price)}
                 </p>
               </div>
               <ReservationStatusBadge status={r.status} />
@@ -86,6 +83,7 @@ export function MerchantReservationsPage() {
           </li>
         ))}
       </ul>
+      )}
     </MerchantWorkspace>
   )
 }

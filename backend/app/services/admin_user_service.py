@@ -5,8 +5,10 @@ from typing import Any
 
 from app.extensions import db
 from app.models.enums import AccountStatus, UserRole
+from app.repositories.store_repository import StoreRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
+from app.services.store_service import StoreService
 from app.utils.pagination import normalize_page_params, pagination_meta
 from app.utils.responses import ApiError
 
@@ -56,6 +58,16 @@ class AdminUserService:
             "users": [self._auth.serialize_user(u) for u in users],
             "pagination": pagination_meta(total, page, per_page),
         }
+
+    def get_user_detail(self, user_id: int) -> dict[str, Any]:
+        user = self._users.find_by_id(user_id)
+        if user is None:
+            raise ApiError("Utilisateur introuvable.", status=404)
+        payload: dict[str, Any] = {"user": self._auth.serialize_user(user), "store": None}
+        store = StoreRepository(db.session).find_by_owner_id(user.id)
+        if store is not None:
+            payload["store"] = StoreService.serialize_store(store)
+        return payload
 
     def update_account_status(self, admin, user_id: int, new_status: str) -> dict[str, Any]:
         if admin.id == user_id:

@@ -1,4 +1,5 @@
-import { type FormEvent, Fragment, useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { type FormEvent, Fragment, useMemo, useState } from 'react'
 
 import { ProductCreateImageSlots, productCreateMinImages } from '../../components/merchant/ProductCreateImageSlots'
 import { Icon } from '../../components/icons/Icon'
@@ -9,13 +10,14 @@ import { Pagination } from '../../components/ui/Pagination'
 import { Badge } from '../../components/ui/Badge'
 import { getApiErrorMessage } from '../../lib/api/errors'
 import type { Product } from '../../lib/api/types'
-import { fetchCategories } from '../../lib/services/catalogService'
+import { catalogCategoryQueryKey, useCategories } from '../../lib/hooks/useCatalog'
+import { merchantKeys, useMerchantProducts } from '../../lib/hooks/useMerchant'
+import { MerchantTableSkeleton } from '../../components/ui/MerchantDataSkeleton'
 import {
   addProductImageUrl,
   createProduct,
   deleteProduct,
   deleteProductImage,
-  listProducts,
   updateProduct,
   uploadProductImage,
 } from '../../lib/services/merchantProductService'
@@ -23,8 +25,15 @@ import {
 const PAGE_SIZE = 8
 
 export function MerchantProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([])
+  const queryClient = useQueryClient()
+  const productsQuery = useMerchantProducts()
+  const categoriesQuery = useCategories()
+  const products = productsQuery.data ?? []
+  const categories = categoriesQuery.data ?? []
+  const isLoadingCategories =
+    categoriesQuery.isPending || (categoriesQuery.isFetching && categories.length === 0)
+  const categoriesUnavailable = !isLoadingCategories && categories.length === 0
+  const isLoadingProducts = productsQuery.isLoading && !productsQuery.data
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState({ category_id: '', name: '', description: '' })
   const [search, setSearch] = useState('')
@@ -38,18 +47,13 @@ export function MerchantProductsPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
-  async function load() {
+  async function refreshProducts() {
     try {
-      setProducts(await listProducts())
+      await queryClient.invalidateQueries({ queryKey: merchantKeys.products })
     } catch (err) {
       setError(getApiErrorMessage(err))
     }
   }
-
-  useEffect(() => {
-    void load()
-    void fetchCategories().then(setCategories)
-  }, [])
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -91,7 +95,7 @@ export function MerchantProductsPage() {
       }
       resetCreateForm()
       setMessage('Produit créé avec ses images.')
-      await load()
+      await refreshProducts()
     } catch (err) {
       setError(getApiErrorMessage(err))
     } finally {
@@ -101,19 +105,19 @@ export function MerchantProductsPage() {
 
   async function handleToggleActive(product: Product) {
     await updateProduct(product.id, { is_active: !product.is_active })
-    await load()
+    await refreshProducts()
   }
 
   async function handleDelete(id: number) {
     if (!confirm('Supprimer ce produit ?')) return
     await deleteProduct(id)
-    await load()
+    await refreshProducts()
   }
 
   async function handleUpload(productId: number, file: File) {
     await uploadProductImage(productId, file)
     setMessage('Image envoyée.')
-    await load()
+    await refreshProducts()
   }
 
   return (
@@ -147,9 +151,10 @@ export function MerchantProductsPage() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm"
+          disabled={isLoadingCategories}
+          className="rounded-xl border border-gbandjo-border px-3 py-2 text-sm disabled:opacity-60"
         >
-          <option value="">Catégorie : toutes</option>
+          <option value="">{isLoadingCategories ? 'Catégories…' : 'Catégorie : toutes'}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -182,18 +187,40 @@ export function MerchantProductsPage() {
           <label className="text-sm font-medium">
             Catégorie
             <select
-              className="mt-1 w-full rounded-xl border border-gbandjo-border bg-white px-3 py-2.5 text-sm"
+              className="mt-1 w-full rounded-xl border border-gbandjo-border bg-white px-3 py-2.5 text-sm disabled:opacity-60"
               value={form.category_id}
               onChange={(e) => setForm({ ...form, category_id: e.target.value })}
               required
+              disabled={isLoadingCategories || categoriesUnavailable}
             >
-              <option value="">Choisir…</option>
+              <option value="">
+                {isLoadingCategories
+                  ? 'Chargement des catégories…'
+                  : categoriesUnavailable
+                    ? 'Aucune catégorie disponible'
+                    : 'Choisir…'}
+              </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
             </select>
+            {categoriesUnavailable ? (
+              <span className="mt-2 block text-xs text-gbandjo-muted">
+                Le catalogue est vide côté serveur. Demandez à un administrateur d&apos;ajouter des catégories, ou
+                exécutez{' '}
+                <code className="rounded bg-white px-1 py-0.5 text-[0.7rem]">python scripts/seed_categories.py</code>{' '}
+                sur le backend.
+                <button
+                  type="button"
+                  className="ml-2 font-semibold text-gbandjo-green underline"
+                  onClick={() => void queryClient.invalidateQueries({ queryKey: catalogCategoryQueryKey })}
+                >
+                  Réessayer
+                </button>
+              </span>
+            ) : null}
           </label>
           <Input label="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <Input
@@ -204,7 +231,7 @@ export function MerchantProductsPage() {
           />
           <ProductCreateImageSlots files={createImages} onChange={setCreateImages} disabled={isCreating} />
           <div className="flex gap-2 sm:col-span-2">
-            <Button type="submit" disabled={isCreating}>
+            <Button type="submit" disabled={isCreating || categoriesUnavailable || isLoadingCategories}>
               {isCreating ? 'Publication…' : 'Publier au catalogue'}
             </Button>
             <Button type="button" variant="outline" disabled={isCreating} onClick={() => resetCreateForm()}>
@@ -214,6 +241,9 @@ export function MerchantProductsPage() {
         </form>
       ) : null}
 
+      {isLoadingProducts ? (
+        <MerchantTableSkeleton rows={6} />
+      ) : (
       <div className="overflow-x-auto rounded-2xl border border-gbandjo-border">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="bg-gbandjo-surface text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">
@@ -298,7 +328,7 @@ export function MerchantProductsPage() {
                           className="!px-3 !py-2 text-xs"
                           onClick={() =>
                             void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
-                              .then(load)
+                              .then(refreshProducts)
                               .catch((err) => setError(getApiErrorMessage(err)))
                           }
                         >
@@ -313,7 +343,7 @@ export function MerchantProductsPage() {
                               <button
                                 type="button"
                                 className="absolute -right-1 -top-1 rounded-full bg-white text-xs text-red-600 shadow"
-                                onClick={() => void deleteProductImage(p.id, img.id).then(load)}
+                                onClick={() => void deleteProductImage(p.id, img.id).then(refreshProducts)}
                               >
                                 ×
                               </button>
@@ -329,6 +359,7 @@ export function MerchantProductsPage() {
           </tbody>
         </table>
       </div>
+      )}
 
       <Pagination
         page={page}
