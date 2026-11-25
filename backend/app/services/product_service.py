@@ -7,10 +7,16 @@ from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models import Product, ProductImage
+from app.models.enums import ReservationStatus
 from app.repositories.category_repository import CategoryRepository
 from app.repositories.product_repository import ProductRepository
 from app.utils.cloudinary_storage import upload_product_image
 from app.utils.responses import ApiError
+
+_ACTIVE_RESERVATION_STATUSES = {
+    ReservationStatus.EN_ATTENTE,
+    ReservationStatus.CONFIRMEE,
+}
 
 
 class ProductService:
@@ -72,8 +78,21 @@ class ProductService:
         product = self._products.find_for_store(product_id, store.id)
         if product is None:
             raise ApiError("Produit introuvable.", status=404)
-        if product.offers:
-            raise ApiError("Impossible de supprimer un produit qui possède des offres.", status=409)
+
+        for offer in product.offers:
+            for reservation in offer.reservations:
+                if reservation.status in _ACTIVE_RESERVATION_STATUSES:
+                    raise ApiError(
+                        "Impossible de supprimer ce produit : des réservations sont encore en cours. "
+                        "Traitez-les d'abord.",
+                        status=409,
+                    )
+
+        for offer in list(product.offers):
+            for reservation in list(offer.reservations):
+                db.session.delete(reservation)
+            db.session.delete(offer)
+
         db.session.delete(product)
         db.session.commit()
 

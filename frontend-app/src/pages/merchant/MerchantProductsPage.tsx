@@ -44,6 +44,8 @@ export function MerchantProductsPage() {
   const [imageUrl, setImageUrl] = useState<Record<number, string>>({})
   const [createImages, setCreateImages] = useState<(File | null)[]>([null, null, null])
   const [isCreating, setIsCreating] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -108,10 +110,22 @@ export function MerchantProductsPage() {
     await refreshProducts()
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('Supprimer ce produit ?')) return
-    await deleteProduct(id)
-    await refreshProducts()
+  async function confirmDeleteProduct() {
+    if (!productToDelete) return
+    setError('')
+    setIsDeleting(true)
+    try {
+      await deleteProduct(productToDelete.id)
+      setMessage(`« ${productToDelete.name} » a été supprimé.`)
+      setProductToDelete(null)
+      if (expandedId === productToDelete.id) setExpandedId(null)
+      await refreshProducts()
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Suppression impossible.'))
+      setProductToDelete(null)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   async function handleUpload(productId: number, file: File) {
@@ -273,7 +287,7 @@ export function MerchantProductsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => void handleDelete(p.id)}
+                    onClick={() => setProductToDelete(p)}
                     className="rounded-xl border border-red-200 px-3 py-2"
                     aria-label="Supprimer"
                   >
@@ -346,7 +360,7 @@ export function MerchantProductsPage() {
                             <Icon name="edit" className="h-4 w-4" />
                             Modifier
                           </button>
-                          <button type="button" onClick={() => void handleDelete(p.id)} aria-label="Supprimer">
+                          <button type="button" onClick={() => setProductToDelete(p)} aria-label="Supprimer">
                             <Icon name="trash" className="h-5 w-5 text-red-500" />
                           </button>
                         </div>
@@ -387,6 +401,46 @@ export function MerchantProductsPage() {
         onPageChange={setPage}
         className="mt-6"
       />
+
+      {productToDelete ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-product-title"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-gbandjo-border bg-white p-5 shadow-xl">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-500">
+              <Icon name="trash" className="h-5 w-5" />
+            </div>
+            <h2 id="delete-product-title" className="text-lg font-bold text-gbandjo-ink">
+              Supprimer ce produit ?
+            </h2>
+            <p className="mt-2 text-sm text-gbandjo-muted">
+              « {productToDelete.name} » sera définitivement retiré du catalogue, avec ses images et ses offres
+              associées. Cette action est irréversible.
+            </p>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDeleting}
+                onClick={() => setProductToDelete(null)}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                disabled={isDeleting}
+                className="!bg-red-600 !shadow-red-600/25 hover:!bg-red-700"
+                onClick={() => void confirmDeleteProduct()}
+              >
+                {isDeleting ? 'Suppression…' : 'Oui, supprimer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </MerchantWorkspace>
   )
 }

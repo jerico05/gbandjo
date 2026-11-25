@@ -4,7 +4,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Product, ProductImage
+from app.models import Offer, Product, ProductImage
 
 
 class ProductRepository:
@@ -30,7 +30,7 @@ class ProductRepository:
             .options(
                 selectinload(Product.images),
                 selectinload(Product.category),
-                selectinload(Product.offers),
+                selectinload(Product.offers).selectinload(Offer.reservations),
             )
         )
         return self._session.scalar(statement)

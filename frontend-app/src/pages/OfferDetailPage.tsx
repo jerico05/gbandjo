@@ -175,49 +175,102 @@ export function OfferDetailPage() {
 }
 
 function OfferInfoSection({ offer, description }: { offer: ConsumerOffer; description?: string }) {
+  const infoTiles = [
+    {
+      icon: 'package' as const,
+      label: 'Disponible',
+      value: `${offer.available_quantity} unité${offer.available_quantity > 1 ? 's' : ''}`,
+    },
+    {
+      icon: 'offers' as const,
+      label: 'Début',
+      value: formatOfferDateTime(offer.starts_at),
+    },
+    {
+      icon: 'reservations' as const,
+      label: 'Fin',
+      value: formatOfferDateTime(offer.ends_at),
+    },
+    ...(offer.expiry_date
+      ? [
+          {
+            icon: 'shield' as const,
+            label: 'À consommer avant',
+            value: formatOfferDate(offer.expiry_date),
+          },
+        ]
+      : []),
+    ...(offer.distance_km != null
+      ? [
+          {
+            icon: 'location' as const,
+            label: 'Distance',
+            value: `${offer.distance_km} km`,
+          },
+        ]
+      : []),
+  ]
+
   return (
-    <section className="rounded-2xl border border-gbandjo-border bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-gbandjo-muted">Informations</h2>
-      <dl className="space-y-3 text-sm">
-        <InfoRow label="Description" value={description || 'Aucune description fournie pour ce produit.'} />
-        <InfoRow label="Disponible" value={`${offer.available_quantity} unité(s) en stock`} />
-        <InfoRow label="Valable du" value={formatOfferDateTime(offer.starts_at)} />
-        <InfoRow label="Jusqu’au" value={formatOfferDateTime(offer.ends_at)} />
-        {offer.expiry_date ? <InfoRow label="Date limite consommation" value={formatOfferDate(offer.expiry_date)} /> : null}
-        {offer.distance_km != null ? (
-          <InfoRow label="Distance" value={`${offer.distance_km} km (approximatif)`} />
-        ) : null}
-      </dl>
+    <section className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-sm">
+        <div className="border-b border-gbandjo-border bg-gradient-to-r from-gbandjo-green-light/70 to-white px-4 py-3 sm:px-5">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-gbandjo-green-dark">Informations</h2>
+        </div>
+
+        <div className="space-y-4 p-4 sm:p-5">
+          <div>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">Description</p>
+            <p className="text-sm leading-relaxed text-gbandjo-ink">
+              {description || 'Aucune description fournie pour ce produit.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            {infoTiles.map((tile) => (
+              <div
+                key={tile.label}
+                className="rounded-xl border border-gbandjo-border/80 bg-[#f8f9fb] px-3 py-3"
+              >
+                <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-gbandjo-green-light text-gbandjo-green">
+                  <Icon name={tile.icon} className="h-4 w-4" />
+                </div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-gbandjo-muted">{tile.label}</p>
+                <p className="mt-0.5 text-sm font-semibold leading-snug text-gbandjo-ink">{tile.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {offer.store ? (
-        <>
-          <h3 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wide text-gbandjo-muted">Commerce</h3>
-          <dl className="space-y-3 text-sm">
-            <InfoRow label="Adresse" value={offer.store.address ?? '—'} icon="location" />
-            {offer.store.phone ? <InfoRow label="Téléphone" value={offer.store.phone} /> : null}
-          </dl>
-        </>
+        <div className="rounded-2xl border border-gbandjo-border bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gbandjo-orange/15 text-gbandjo-orange">
+              <Icon name="store" className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gbandjo-muted">Commerce</p>
+              <p className="mt-0.5 text-base font-bold text-gbandjo-ink">{offer.store.name}</p>
+              <div className="mt-3 space-y-2 text-sm text-gbandjo-ink">
+                <p className="flex items-start gap-2">
+                  <Icon name="location" className="mt-0.5 h-4 w-4 shrink-0 text-gbandjo-green" />
+                  <span>{offer.store.address ?? 'Adresse non renseignée'}</span>
+                </p>
+                {offer.store.phone ? (
+                  <a
+                    href={`tel:${offer.store.phone}`}
+                    className="inline-flex items-center gap-2 font-medium text-gbandjo-green hover:underline"
+                  >
+                    <Icon name="message" className="h-4 w-4 shrink-0" />
+                    {offer.store.phone}
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
     </section>
-  )
-}
-
-function InfoRow({
-  label,
-  value,
-  icon,
-}: {
-  label: string
-  value: string
-  icon?: 'location'
-}) {
-  return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-      <dt className="shrink-0 text-xs font-semibold uppercase tracking-wide text-gbandjo-muted sm:w-36">{label}</dt>
-      <dd className="flex items-start gap-2 font-medium text-gbandjo-ink">
-        {icon === 'location' ? <Icon name="location" className="mt-0.5 h-4 w-4 shrink-0 text-gbandjo-green" /> : null}
-        <span>{value}</span>
-      </dd>
-    </div>
   )
 }

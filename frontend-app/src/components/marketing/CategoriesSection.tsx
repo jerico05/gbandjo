@@ -9,12 +9,14 @@ type CategoriesSectionProps = {
 }
 
 const fallbacks = [
-  { id: -1, name: 'Boulangerie' },
-  { id: -2, name: 'Épicerie' },
-  { id: -3, name: 'Restaurant' },
-  { id: -4, name: 'Bio' },
-  { id: -5, name: 'Maison' },
-  { id: -6, name: 'Frais' },
+  { id: -1, name: 'Produits laitiers' },
+  { id: -2, name: 'Boissons et jus' },
+  { id: -3, name: 'Fruits et légumes' },
+  { id: -4, name: 'Boulangerie et pâtisserie' },
+  { id: -5, name: 'Viandes et volailles' },
+  { id: -6, name: 'Poissons et fruits de mer' },
+  { id: -7, name: 'Épicerie et produits alimentaires' },
+  { id: -8, name: 'Biscuits et confiseries' },
 ]
 
 export function CategoriesSection({ categories }: CategoriesSectionProps) {
@@ -26,7 +28,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
         <div className="mb-5 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
           <div>
             <h2 className="text-xl font-extrabold text-gbandjo-ink sm:text-2xl lg:text-3xl">Acheter par catégorie</h2>
-            <p className="mt-1 text-sm text-gbandjo-muted sm:mt-2">Boulangerie, épicerie, frais et plus encore</p>
+            <p className="mt-1 text-sm text-gbandjo-muted sm:mt-2">Laitiers, boissons, fruits, boulangerie et plus</p>
           </div>
           <Link to="/espace" className="text-sm font-semibold text-gbandjo-green hover:underline">
             Tout le catalogue →

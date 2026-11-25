@@ -1,12 +1,14 @@
 import type { Category, ConsumerOffer } from '../../lib/api/types'
 
 export const mockCategories: Category[] = [
-  { id: 1, name: 'Boulangerie' },
-  { id: 2, name: 'Épicerie' },
-  { id: 3, name: 'Restaurant' },
-  { id: 4, name: 'Fruits & légumes' },
-  { id: 5, name: 'Cosmétiques' },
-  { id: 6, name: 'Maison' },
+  { id: 1, name: 'Produits laitiers' },
+  { id: 2, name: 'Boissons et jus' },
+  { id: 3, name: 'Fruits et légumes' },
+  { id: 4, name: 'Boulangerie et pâtisserie' },
+  { id: 5, name: 'Viandes et volailles' },
+  { id: 6, name: 'Poissons et fruits de mer' },
+  { id: 7, name: 'Épicerie et produits alimentaires' },
+  { id: 8, name: 'Biscuits et confiseries' },
 ]
 
 export const mockOffers: ConsumerOffer[] = [
@@ -19,7 +21,7 @@ export const mockOffers: ConsumerOffer[] = [
     starts_at: new Date().toISOString(),
     ends_at: new Date(Date.now() + 86_400_000).toISOString(),
     status: 'ACTIVE',
-    product: { name: 'Panier surprise boulangerie', category_name: 'Boulangerie' },
+    product: { name: 'Panier surprise boulangerie', category_name: 'Boulangerie et pâtisserie' },
     store: { name: 'Chez Ama', city: 'Lomé' },
   },
   {
@@ -31,7 +33,7 @@ export const mockOffers: ConsumerOffer[] = [
     starts_at: new Date().toISOString(),
     ends_at: new Date(Date.now() + 172_800_000).toISOString(),
     status: 'ACTIVE',
-    product: { name: 'Invendus du jour', category_name: 'Restaurant' },
+    product: { name: 'Invendus du jour', category_name: 'Épicerie et produits alimentaires' },
     store: { name: 'Mama Kitchen', city: 'Lomé' },
   },
   {
