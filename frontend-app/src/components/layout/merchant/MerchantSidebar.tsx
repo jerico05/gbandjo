@@ -23,7 +23,10 @@ const tools: NavItem[] = [
   { to: '/mon-commerce/offres', label: 'Offres', icon: 'offers' },
 ]
 
-const settings: NavItem[] = [{ to: '/mon-commerce/parametres', label: 'Paramètres', icon: 'settings' }]
+const settings: NavItem[] = [
+  { to: '/mon-commerce/parametres', label: 'Paramètres', icon: 'settings' },
+  { to: '/', label: 'Accueil', icon: 'home' },
+]
 
 type MerchantSidebarProps = {
   className?: string

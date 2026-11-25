@@ -6,7 +6,7 @@ import { queryClient } from '../../lib/query/queryClient'
 import { fetchCategories, fetchOffers } from '../../lib/services/catalogService'
 
 import { InstallPrompt } from '../pwa/InstallPrompt'
-import { ConsumerMarketplaceFooter } from './consumer/ConsumerMarketplaceFooter'
+import { ConsumerPageEnd } from './consumer/ConsumerPageEnd'
 import { ConsumerTopBar } from './consumer/ConsumerTopBar'
 import { ConsumerSearchContext } from './consumer/consumer-search-context'
 
@@ -28,12 +28,12 @@ export function ConsumerShell() {
 
   return (
     <ConsumerSearchContext.Provider value={{ query, setQuery }}>
-    <div className="min-h-svh bg-[#f5f6f8]">
+    <div className="flex min-h-svh flex-col bg-[#f5f6f8]">
       <ConsumerTopBar />
-      <main className="mx-auto max-w-7xl px-3 py-4 pb-8 sm:px-6 sm:py-6 lg:pb-10">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-3 py-4 sm:px-6 sm:py-6 lg:py-8">
         <Outlet />
       </main>
-      <ConsumerMarketplaceFooter />
+      <ConsumerPageEnd />
       <InstallPrompt />
     </div>
     </ConsumerSearchContext.Provider>

@@ -99,13 +99,20 @@ export function MerchantTopBar({ onSidebarToggle }: MerchantTopBarProps) {
               </span>
             </button>
             {menuOpen ? (
-              <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-gbandjo-border bg-white py-1 shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-gbandjo-border bg-white py-1 shadow-lg">
                 <Link
-                  to="/mon-commerce/parametres"
+                  to="/"
+                  className="block px-4 py-2.5 text-sm font-medium text-gbandjo-ink hover:bg-gbandjo-surface"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Accueil
+                </Link>
+                <Link
+                  to="/mon-commerce"
                   className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Paramètres
+                  Tableau de bord
                 </Link>
                 <Link
                   to="/mon-commerce/notifications"
@@ -115,11 +122,11 @@ export function MerchantTopBar({ onSidebarToggle }: MerchantTopBarProps) {
                   Notifications {unread > 0 ? `(${unread})` : ''}
                 </Link>
                 <Link
-                  to="/"
-                  className="block border-t px-4 py-2.5 text-sm text-gbandjo-muted hover:bg-gbandjo-surface"
+                  to="/mon-commerce/parametres"
+                  className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Site vitrine
+                  Paramètres
                 </Link>
                 <button
                   type="button"

@@ -14,26 +14,26 @@ export function FeaturedOffersSection({ offers, isLiveData, isLoading }: Feature
   const top = offers.slice(0, 8)
 
   return (
-    <section className="bg-white py-14 sm:py-16">
+    <section className="bg-white py-10 sm:py-14 lg:py-16">
       <Container>
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
+        <div className="mb-6 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-widest text-gbandjo-orange">Sélection</p>
-            <h2 className="mt-1 text-2xl font-extrabold text-gbandjo-ink sm:text-3xl">Tendances près de vous</h2>
+            <h2 className="mt-1 text-xl font-extrabold text-gbandjo-ink sm:text-2xl lg:text-3xl">Tendances près de vous</h2>
             <p className="mt-2 max-w-xl text-sm text-gbandjo-muted">
               {isLiveData
                 ? 'Offres en temps réel auprès de nos commerces partenaires.'
                 : 'Aperçu du catalogue. Connectez la plateforme pour afficher les offres en direct.'}
             </p>
           </div>
-          <Button href="/espace" variant="outline" className="!rounded-full">
+          <Button href="/espace" variant="outline" className="!w-full !rounded-full sm:!w-auto">
             Voir tout le catalogue
           </Button>
         </div>
         {isLoading && top.length === 0 ? (
           <OfferGridSkeleton count={4} />
         ) : top.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-gbandjo-border bg-gbandjo-surface py-16 text-center text-gbandjo-muted">
+          <p className="rounded-2xl border border-dashed border-gbandjo-border bg-gbandjo-surface py-12 text-center text-sm text-gbandjo-muted sm:py-16">
             Les premières offres apparaîtront ici dès qu&apos;un commerce sera actif.
           </p>
         ) : (

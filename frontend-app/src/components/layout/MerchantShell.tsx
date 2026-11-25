@@ -10,7 +10,6 @@ import { listProducts } from '../../lib/services/merchantProductService'
 import { listMerchantReservations } from '../../lib/services/reservationService'
 import { fetchMyStore } from '../../lib/services/storeService'
 import { InstallPrompt } from '../pwa/InstallPrompt'
-import { MerchantPromoBar } from '../merchant/marketplace/MerchantPromoBar'
 import { MerchantSidebar } from './merchant/MerchantSidebar'
 import { MerchantTopBar } from './merchant/MerchantTopBar'
 
@@ -56,7 +55,6 @@ export function MerchantShell() {
       ) : null}
 
       <div className="flex min-h-svh min-w-0 flex-col lg:ml-64">
-        <MerchantPromoBar />
         <MerchantTopBar onSidebarToggle={() => setMobileNavOpen((o) => !o)} />
         <main className="flex-1 px-3 py-4 sm:p-6 lg:p-8">
           <Outlet />

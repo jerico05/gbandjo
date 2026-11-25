@@ -194,15 +194,19 @@ function HeaderNotificationButton({ unread }: { unread: number }) {
 
 function GuestDropdown({ onClose }: { onClose: () => void }) {
   return (
-    <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-xl">
-      <Link to="/connexion" state={{ from: '/espace' }} className="block px-4 py-2.5 text-sm font-semibold text-gbandjo-green" onClick={onClose}>
+    <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-xl">
+      <Link to="/" className="block px-4 py-2.5 text-sm font-medium text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
+        Accueil
+      </Link>
+      <Link to="/espace" className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
+        Catalogue
+      </Link>
+      <div className="border-t border-gbandjo-border" />
+      <Link to="/connexion" state={{ from: '/espace' }} className="block px-4 py-2.5 text-sm font-semibold text-gbandjo-green hover:bg-gbandjo-surface" onClick={onClose}>
         Connexion
       </Link>
-      <Link to="/inscription" className="block border-t px-4 py-2.5 text-sm" onClick={onClose}>
+      <Link to="/inscription" className="block px-4 py-2.5 text-sm hover:bg-gbandjo-surface" onClick={onClose}>
         Créer un compte
-      </Link>
-      <Link to="/" className="block border-t px-4 py-2.5 text-sm text-gbandjo-muted" onClick={onClose}>
-        Site vitrine
       </Link>
     </div>
   )
@@ -225,19 +229,22 @@ function AccountDropdown({
         </p>
         <p className="truncate text-xs text-gbandjo-muted">{user?.email}</p>
       </div>
-      <Link to="/espace/profil" className="block px-4 py-2.5 text-sm" onClick={onClose}>
-        Mon profil
+      <Link to="/" className="block px-4 py-2.5 text-sm font-medium text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
+        Accueil
       </Link>
-      <Link to="/espace/reservations" className="block px-4 py-2.5 text-sm" onClick={onClose}>
+      <Link to="/espace" className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
+        Catalogue
+      </Link>
+      <Link to="/espace/reservations" className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
         Mes réservations
       </Link>
-      <Link to="/espace/notifications" className="block px-4 py-2.5 text-sm sm:hidden" onClick={onClose}>
+      <Link to="/espace/notifications" className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface sm:hidden" onClick={onClose}>
         Notifications
       </Link>
-      <Link to="/" className="block border-t px-4 py-2.5 text-sm text-gbandjo-muted" onClick={onClose}>
-        Site vitrine
+      <Link to="/espace/profil" className="block px-4 py-2.5 text-sm text-gbandjo-ink hover:bg-gbandjo-surface" onClick={onClose}>
+        Mon profil
       </Link>
-      <button type="button" onClick={onLogout} className="w-full border-t px-4 py-2.5 text-left text-sm text-red-600">
+      <button type="button" onClick={onLogout} className="w-full border-t px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50">
         Déconnexion
       </button>
     </div>

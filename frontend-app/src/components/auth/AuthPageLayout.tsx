@@ -69,8 +69,6 @@ function AuthShell({
 }) {
   return (
     <section className="overflow-hidden rounded-3xl border border-gbandjo-border bg-white shadow-[0_16px_50px_rgba(26,46,31,0.12)]">
-      <div className="h-1.5 w-full bg-gradient-to-r from-gbandjo-green via-gbandjo-green to-gbandjo-orange" />
-
       <div className="px-6 py-8 sm:px-9 sm:py-10">
         <div className="flex flex-col items-center text-center">
           <Link to="/" className="mb-5 inline-flex" aria-label="Accueil Gbandjo">
