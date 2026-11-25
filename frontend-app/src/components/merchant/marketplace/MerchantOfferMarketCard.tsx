@@ -6,12 +6,14 @@ import { formatFcfa } from '../../../lib/utils/formatMoney'
 
 type MerchantOfferMarketCardProps = {
   offer: MerchantOffer
+  onEdit?: () => void
   onDeactivate?: () => void
   onWithdraw?: () => void
 }
 
-export function MerchantOfferMarketCard({ offer, onDeactivate, onWithdraw }: MerchantOfferMarketCardProps) {
+export function MerchantOfferMarketCard({ offer, onEdit, onDeactivate, onWithdraw }: MerchantOfferMarketCardProps) {
   const isActive = offer.status === 'ACTIVE'
+  const canEdit = offer.status !== 'RETIREE' && onEdit
 
   return (
     <article className="overflow-hidden rounded-2xl border border-gbandjo-border bg-white shadow-sm transition hover:shadow-md">
@@ -40,14 +42,20 @@ export function MerchantOfferMarketCard({ offer, onDeactivate, onWithdraw }: Mer
         <p className="text-xs text-gbandjo-muted">
           Stock : {offer.available_quantity}, fin le {new Date(offer.ends_at).toLocaleDateString('fr-FR')}
         </p>
-        {isActive && (onDeactivate || onWithdraw) ? (
+        {canEdit || (isActive && (onDeactivate || onWithdraw)) ? (
           <div className="flex flex-wrap gap-2 pt-2">
-            {onDeactivate ? (
+            {canEdit ? (
+              <Button type="button" className="!py-2 text-xs" onClick={onEdit}>
+                <Icon name="edit" className="h-3.5 w-3.5" />
+                Modifier
+              </Button>
+            ) : null}
+            {isActive && onDeactivate ? (
               <Button type="button" variant="outline" className="!py-2 text-xs" onClick={onDeactivate}>
                 Désactiver
               </Button>
             ) : null}
-            {onWithdraw ? (
+            {isActive && onWithdraw ? (
               <Button type="button" variant="ghost" className="!py-2 text-xs" onClick={onWithdraw}>
                 Retirer
               </Button>

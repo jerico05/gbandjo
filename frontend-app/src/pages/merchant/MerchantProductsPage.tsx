@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type FormEvent, Fragment, useMemo, useState } from 'react'
+import { type FormEvent, useMemo, useState } from 'react'
 
 import { ProductCreateImageSlots, productCreateMinImages } from '../../components/merchant/ProductCreateImageSlots'
+import { ProductEditModal } from '../../components/merchant/ProductEditModal'
 import { Icon } from '../../components/icons/Icon'
 import { MerchantWorkspace } from '../../components/merchant/MerchantWorkspace'
 import { Button } from '../../components/ui/Button'
@@ -13,14 +14,7 @@ import type { Product } from '../../lib/api/types'
 import { catalogCategoryQueryKey, useCategories } from '../../lib/hooks/useCatalog'
 import { merchantKeys, useMerchantProducts } from '../../lib/hooks/useMerchant'
 import { MerchantTableSkeleton } from '../../components/ui/MerchantDataSkeleton'
-import {
-  addProductImageUrl,
-  createProduct,
-  deleteProduct,
-  deleteProductImage,
-  updateProduct,
-  uploadProductImage,
-} from '../../lib/services/merchantProductService'
+import { createProduct, deleteProduct, uploadProductImage } from '../../lib/services/merchantProductService'
 
 const PAGE_SIZE = 8
 
@@ -40,10 +34,9 @@ export function MerchantProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
-  const [imageUrl, setImageUrl] = useState<Record<number, string>>({})
   const [createImages, setCreateImages] = useState<(File | null)[]>([null, null, null])
   const [isCreating, setIsCreating] = useState(false)
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
@@ -105,11 +98,6 @@ export function MerchantProductsPage() {
     }
   }
 
-  async function handleToggleActive(product: Product) {
-    await updateProduct(product.id, { is_active: !product.is_active })
-    await refreshProducts()
-  }
-
   async function confirmDeleteProduct() {
     if (!productToDelete) return
     setError('')
@@ -117,8 +105,8 @@ export function MerchantProductsPage() {
     try {
       await deleteProduct(productToDelete.id)
       setMessage(`« ${productToDelete.name} » a été supprimé.`)
+      if (productToEdit?.id === productToDelete.id) setProductToEdit(null)
       setProductToDelete(null)
-      if (expandedId === productToDelete.id) setExpandedId(null)
       await refreshProducts()
     } catch (err) {
       setError(getApiErrorMessage(err, 'Suppression impossible.'))
@@ -126,12 +114,6 @@ export function MerchantProductsPage() {
     } finally {
       setIsDeleting(false)
     }
-  }
-
-  async function handleUpload(productId: number, file: File) {
-    await uploadProductImage(productId, file)
-    setMessage('Image envoyée.')
-    await refreshProducts()
   }
 
   return (
@@ -279,7 +261,7 @@ export function MerchantProductsPage() {
                 <div className="mt-3 flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                    onClick={() => setProductToEdit(p)}
                     className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-gbandjo-green px-3 py-2 text-xs font-semibold text-white"
                   >
                     <Icon name="edit" className="h-4 w-4" />
@@ -294,23 +276,6 @@ export function MerchantProductsPage() {
                     <Icon name="trash" className="h-5 w-5 text-red-500" />
                   </button>
                 </div>
-                {expandedId === p.id ? (
-                  <div className="mt-3 border-t border-gbandjo-border pt-3">
-                    <ProductExpandPanel
-                      product={p}
-                      imageUrl={imageUrl[p.id] ?? ''}
-                      onImageUrlChange={(value) => setImageUrl({ ...imageUrl, [p.id]: value })}
-                      onToggleActive={() => void handleToggleActive(p)}
-                      onUpload={(file) => void handleUpload(p.id, file)}
-                      onAddUrl={() =>
-                        void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
-                          .then(refreshProducts)
-                          .catch((err) => setError(getApiErrorMessage(err)))
-                      }
-                      onDeleteImage={(imageId) => void deleteProductImage(p.id, imageId).then(refreshProducts)}
-                    />
-                  </div>
-                ) : null}
               </li>
             ))}
           </ul>
@@ -328,64 +293,43 @@ export function MerchantProductsPage() {
               </thead>
               <tbody>
                 {pageItems.map((p) => (
-                  <Fragment key={p.id}>
-                    <tr className="border-t border-gbandjo-border hover:bg-gbandjo-surface/50">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          {p.images?.[0] ? (
-                            <img src={p.images[0].url} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                          ) : (
-                            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gbandjo-green-light">
-                              <Icon name="image" className="h-6 w-6 text-gbandjo-green/50" />
-                            </span>
-                          )}
-                          <div>
-                            <p className="font-semibold text-gbandjo-ink">{p.name}</p>
-                            <p className="text-xs text-gbandjo-muted">ID #{p.id}</p>
-                          </div>
+                  <tr key={p.id} className="border-t border-gbandjo-border hover:bg-gbandjo-surface/50">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        {p.images?.[0] ? (
+                          <img src={p.images[0].url} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+                          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gbandjo-green-light">
+                            <Icon name="image" className="h-6 w-6 text-gbandjo-green/50" />
+                          </span>
+                        )}
+                        <div>
+                          <p className="font-semibold text-gbandjo-ink">{p.name}</p>
+                          <p className="text-xs text-gbandjo-muted">ID #{p.id}</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-gbandjo-muted">{p.category_name}</td>
-                      <td className="px-4 py-4">{p.images?.length ?? 0}</td>
-                      <td className="px-4 py-4">
-                        <Badge tone={p.is_active ? 'green' : 'neutral'}>{p.is_active ? 'Actif' : 'Inactif'}</Badge>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
-                            className="inline-flex items-center gap-1 rounded-xl bg-gbandjo-green px-3 py-1.5 text-xs font-semibold text-white"
-                          >
-                            <Icon name="edit" className="h-4 w-4" />
-                            Modifier
-                          </button>
-                          <button type="button" onClick={() => setProductToDelete(p)} aria-label="Supprimer">
-                            <Icon name="trash" className="h-5 w-5 text-red-500" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {expandedId === p.id ? (
-                      <tr className="border-t border-gbandjo-border bg-gbandjo-surface/40">
-                        <td colSpan={5} className="px-4 py-4">
-                          <ProductExpandPanel
-                            product={p}
-                            imageUrl={imageUrl[p.id] ?? ''}
-                            onImageUrlChange={(value) => setImageUrl({ ...imageUrl, [p.id]: value })}
-                            onToggleActive={() => void handleToggleActive(p)}
-                            onUpload={(file) => void handleUpload(p.id, file)}
-                            onAddUrl={() =>
-                              void addProductImageUrl(p.id, imageUrl[p.id] ?? '')
-                                .then(refreshProducts)
-                                .catch((err) => setError(getApiErrorMessage(err)))
-                            }
-                            onDeleteImage={(imageId) => void deleteProductImage(p.id, imageId).then(refreshProducts)}
-                          />
-                        </td>
-                      </tr>
-                    ) : null}
-                  </Fragment>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-gbandjo-muted">{p.category_name}</td>
+                    <td className="px-4 py-4">{p.images?.length ?? 0}</td>
+                    <td className="px-4 py-4">
+                      <Badge tone={p.is_active ? 'green' : 'neutral'}>{p.is_active ? 'Actif' : 'Inactif'}</Badge>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setProductToEdit(p)}
+                          className="inline-flex items-center gap-1 rounded-xl bg-gbandjo-green px-3 py-1.5 text-xs font-semibold text-white"
+                        >
+                          <Icon name="edit" className="h-4 w-4" />
+                          Modifier
+                        </button>
+                        <button type="button" onClick={() => setProductToDelete(p)} aria-label="Supprimer">
+                          <Icon name="trash" className="h-5 w-5 text-red-500" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -400,6 +344,17 @@ export function MerchantProductsPage() {
         hasNext={page < pages}
         onPageChange={setPage}
         className="mt-6"
+      />
+
+      <ProductEditModal
+        product={productToEdit}
+        categories={categories}
+        open={productToEdit != null}
+        onClose={() => setProductToEdit(null)}
+        onSaved={async () => {
+          setMessage('Produit mis à jour.')
+          await refreshProducts()
+        }}
       />
 
       {productToDelete ? (
@@ -442,72 +397,5 @@ export function MerchantProductsPage() {
         </div>
       ) : null}
     </MerchantWorkspace>
-  )
-}
-
-function ProductExpandPanel({
-  product,
-  imageUrl,
-  onImageUrlChange,
-  onToggleActive,
-  onUpload,
-  onAddUrl,
-  onDeleteImage,
-}: {
-  product: Product
-  imageUrl: string
-  onImageUrlChange: (value: string) => void
-  onToggleActive: () => void
-  onUpload: (file: File) => void
-  onAddUrl: () => void
-  onDeleteImage: (imageId: number) => void
-}) {
-  return (
-    <>
-      <p className="mb-2 text-sm text-gbandjo-muted">{product.description || 'Aucune description'}</p>
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
-        <Button type="button" variant="outline" onClick={onToggleActive}>
-          {product.is_active ? 'Désactiver' : 'Activer'}
-        </Button>
-        <label className="cursor-pointer rounded-xl border border-gbandjo-border px-3 py-2 text-center text-xs sm:text-left">
-          Upload image
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) onUpload(file)
-            }}
-          />
-        </label>
-        <input
-          type="url"
-          placeholder="URL image"
-          className="w-full rounded-xl border border-gbandjo-border px-3 py-2 text-sm sm:w-auto"
-          value={imageUrl}
-          onChange={(e) => onImageUrlChange(e.target.value)}
-        />
-        <Button type="button" variant="secondary" className="!px-3 !py-2 text-xs" onClick={onAddUrl}>
-          Ajouter URL
-        </Button>
-      </div>
-      {product.images?.length ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {product.images.map((img) => (
-            <span key={img.id} className="relative">
-              <img src={img.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
-              <button
-                type="button"
-                className="absolute -right-1 -top-1 rounded-full bg-white text-xs text-red-600 shadow"
-                onClick={() => onDeleteImage(img.id)}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      ) : null}
-    </>
   )
 }

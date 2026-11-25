@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 
+import { OfferEditModal } from '../../components/merchant/OfferEditModal'
 import { MerchantMarketplaceHero } from '../../components/merchant/marketplace/MerchantMarketplaceHero'
 import { MerchantOfferMarketCard } from '../../components/merchant/marketplace/MerchantOfferMarketCard'
 import { MerchantCardsSkeleton } from '../../components/ui/MerchantDataSkeleton'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { getApiErrorMessage } from '../../lib/api/errors'
+import type { MerchantOffer } from '../../lib/api/types'
 import { formatFcfa } from '../../lib/utils/formatMoney'
 import { merchantKeys, useMerchantOffers, useMerchantProducts } from '../../lib/hooks/useMerchant'
 import {
@@ -28,6 +30,8 @@ export function MerchantOffersPage() {
   const isLoading = offersQuery.isLoading && !offersQuery.data
 
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [offerToEdit, setOfferToEdit] = useState<MerchantOffer | null>(null)
   const [form, setForm] = useState({
     product_id: '',
     initial_price: '',
@@ -108,6 +112,7 @@ export function MerchantOffersPage() {
 
       <section className="rounded-3xl border border-gbandjo-border bg-white p-5 shadow-sm sm:p-6">
         {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+        {message ? <p className="mb-4 text-sm text-gbandjo-green">{message}</p> : null}
         <form
           className="mb-6 grid gap-4 rounded-2xl border border-gbandjo-border bg-gbandjo-surface/50 p-4 sm:mb-8 sm:p-6 md:grid-cols-2"
           onSubmit={handleCreate}
@@ -178,6 +183,7 @@ export function MerchantOffersPage() {
               <MerchantOfferMarketCard
                 key={o.id}
                 offer={o}
+                onEdit={o.status !== 'RETIREE' ? () => setOfferToEdit(o) : undefined}
                 onDeactivate={o.status === 'ACTIVE' ? () => void handleDeactivate(o.id) : undefined}
                 onWithdraw={o.status === 'ACTIVE' ? () => void withdrawMerchantOffer(o.id).then(refreshMerchantData) : undefined}
               />
@@ -185,6 +191,16 @@ export function MerchantOffersPage() {
           </div>
         )}
       </section>
+
+      <OfferEditModal
+        offer={offerToEdit}
+        open={offerToEdit != null}
+        onClose={() => setOfferToEdit(null)}
+        onSaved={async () => {
+          setMessage('Offre mise à jour.')
+          await refreshMerchantData()
+        }}
+      />
     </div>
   )
 }

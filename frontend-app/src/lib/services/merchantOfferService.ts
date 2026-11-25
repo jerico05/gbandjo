@@ -41,6 +41,7 @@ export async function updateMerchantOffer(
     available_quantity: number
     starts_at: string
     ends_at: string
+    expiry_date: string | null
   }>,
 ) {
   const { data } = await apiClient.patch<ApiEnvelope<{ offer: MerchantOffer }>>(
